@@ -1,0 +1,1190 @@
+{
+    "name": "Final - Escenario 3 - Router Aprobacion",
+    "flow": [
+        {
+            "id": 1,
+            "module": "airtable:TriggerWatchRecords",
+            "version": 3,
+            "parameters": {
+                "base": "appCtyPCA4QGzyXR5",
+                "view": "",
+                "table": "tblPQPkpH8S5B10wz",
+                "config": {
+                    "labelField": "Idea Semilla",
+                    "triggerField": "Ultima Modificacion"
+                },
+                "formula": "",
+                "maxRecords": 10,
+                "__IMTCONN__": 11030309,
+                "useColumnId": false
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "base": {
+                            "label": "Pipeline de Contenido"
+                        },
+                        "view": {
+                            "label": "Empty"
+                        },
+                        "table": {
+                            "label": "Contenidos"
+                        },
+                        "config": {
+                            "nested": {
+                                "labelField": {
+                                    "label": "Idea Semilla"
+                                },
+                                "triggerField": {
+                                    "label": "Ultima Modificacion"
+                                }
+                            }
+                        },
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "agustina's Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    },
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "config",
+                        "spec": [
+                            {
+                                "name": "triggerField",
+                                "type": "select",
+                                "label": "Trigger field",
+                                "required": true
+                            },
+                            {
+                                "name": "triggerField",
+                                "type": "hidden"
+                            },
+                            {
+                                "name": "labelField",
+                                "type": "select",
+                                "label": "Label field",
+                                "required": true
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Trigger configuration"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit",
+                        "required": true
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "Idea Semilla",
+                        "type": "text",
+                        "label": "Idea Semilla",
+                        "multiline": true
+                    },
+                    {
+                        "name": "Categoria",
+                        "type": "text",
+                        "label": "Categoria"
+                    },
+                    {
+                        "name": "Estado",
+                        "type": "text",
+                        "label": "Estado"
+                    },
+                    {
+                        "name": "Contenido Generado",
+                        "type": "text",
+                        "label": "Contenido Generado",
+                        "multiline": true
+                    },
+                    {
+                        "name": "Aprobado",
+                        "type": "boolean",
+                        "label": "Aprobado"
+                    },
+                    {
+                        "name": "Canal",
+                        "type": "text",
+                        "label": "Canal"
+                    },
+                    {
+                        "name": "Fecha de Aprobación",
+                        "time": false,
+                        "type": "date",
+                        "label": "Fecha de Aprobación"
+                    },
+                    {
+                        "name": "Ultima Modificacion",
+                        "type": "date",
+                        "label": "Ultima Modificacion"
+                    },
+                    {
+                        "name": "Notificado",
+                        "type": "boolean",
+                        "label": "Notificado"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 7,
+            "module": "builtin:BasicIfElse",
+            "version": 1,
+            "filter": {
+                "name": "Solo en revision",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{1.Estado}}",
+                            "b": "En revisión",
+                            "o": "text:equal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                }
+            },
+            "branches": [
+                {
+                    "merge": false,
+                    "label": "Aprobado",
+                    "type": "condition",
+                    "flow": [
+                        {
+                            "id": 9,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 11030309
+                            },
+                            "mapper": {
+                                "id": "{{1.id}}",
+                                "base": "appCtyPCA4QGzyXR5",
+                                "table": "tblPQPkpH8S5B10wz",
+                                "record": {
+                                    "fldnuLJYcGG4fi2pb": "Publicado",
+                                    "fldy31baX8Oh2nd3p": "Publicado"
+                                },
+                                "typecast": false,
+                                "useColumnId": false
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": -300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "29a45288d1346de3"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "base": {
+                                            "label": "Pipeline de Contenido"
+                                        },
+                                        "table": {
+                                            "label": "Contenidos"
+                                        },
+                                        "record": {
+                                            "nested": {
+                                                "fld6JB1sbyKB4MpEp": {
+                                                    "mode": "chose"
+                                                },
+                                                "fldTXImBdbjlOiMhp": {
+                                                    "mode": "chose"
+                                                },
+                                                "fldVY0KxBjBhufzln": {
+                                                    "mode": "edit"
+                                                },
+                                                "fldW5uce1jnvLRi9A": {
+                                                    "mode": "edit"
+                                                },
+                                                "fldy31baX8Oh2nd3p": {
+                                                    "mode": "edit"
+                                                }
+                                            }
+                                        },
+                                        "typecast": {
+                                            "mode": "chose"
+                                        },
+                                        "useColumnId": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "airtable2"
+                                            },
+                                            "label": "agustina's Airtable Token or Key connection"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:airtable3,airtable2",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "base",
+                                        "type": "select",
+                                        "label": "Base",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "typecast",
+                                        "type": "boolean",
+                                        "label": "Smart links",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "useColumnId",
+                                        "type": "boolean",
+                                        "label": "Use Column ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "table",
+                                        "type": "select",
+                                        "label": "Table",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Record ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "record",
+                                        "spec": [
+                                            {
+                                                "name": "fldqJiCaresz5IMBM",
+                                                "type": "text",
+                                                "label": "Idea Semilla"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldW5uce1jnvLRi9A",
+                                                "type": "select",
+                                                "label": "Categoria"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldy31baX8Oh2nd3p",
+                                                "type": "select",
+                                                "label": "Estado"
+                                            },
+                                            {
+                                                "name": "fldnuLJYcGG4fi2pb",
+                                                "type": "text",
+                                                "label": "Contenido Generado"
+                                            },
+                                            {
+                                                "name": "fld6JB1sbyKB4MpEp",
+                                                "type": "boolean",
+                                                "label": "Aprobado"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldVY0KxBjBhufzln",
+                                                "type": "select",
+                                                "label": "Canal"
+                                            },
+                                            {
+                                                "name": "fldIMeslLRktRCZ5F",
+                                                "time": false,
+                                                "type": "date",
+                                                "label": "Fecha de Aprobación"
+                                            },
+                                            {
+                                                "name": "fldTXImBdbjlOiMhp",
+                                                "type": "boolean",
+                                                "label": "Notificado"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Record"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "ID"
+                                    },
+                                    {
+                                        "name": "createdTime",
+                                        "type": "date",
+                                        "label": "Created Time"
+                                    },
+                                    {
+                                        "name": "Idea Semilla",
+                                        "type": "text",
+                                        "label": "Idea Semilla",
+                                        "multiline": true
+                                    },
+                                    {
+                                        "name": "Categoria",
+                                        "type": "text",
+                                        "label": "Categoria"
+                                    },
+                                    {
+                                        "name": "Estado",
+                                        "type": "text",
+                                        "label": "Estado"
+                                    },
+                                    {
+                                        "name": "Contenido Generado",
+                                        "type": "text",
+                                        "label": "Contenido Generado",
+                                        "multiline": true
+                                    },
+                                    {
+                                        "name": "Aprobado",
+                                        "type": "boolean",
+                                        "label": "Aprobado"
+                                    },
+                                    {
+                                        "name": "Canal",
+                                        "type": "text",
+                                        "label": "Canal"
+                                    },
+                                    {
+                                        "name": "Fecha de Aprobación",
+                                        "time": false,
+                                        "type": "date",
+                                        "label": "Fecha de Aprobación"
+                                    },
+                                    {
+                                        "name": "Ultima Modificacion",
+                                        "type": "date",
+                                        "label": "Ultima Modificacion"
+                                    },
+                                    {
+                                        "name": "Notificado",
+                                        "type": "boolean",
+                                        "label": "Notificado"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 17,
+                                    "module": "airtable:ActionCreateRecord",
+                                    "version": 3,
+                                    "parameters": {
+                                        "__IMTCONN__": 11030309
+                                    },
+                                    "mapper": {
+                                        "base": "appCtyPCA4QGzyXR5",
+                                        "table": "tblgYFeGeFImx8eZe",
+                                        "record": {
+                                            "fldIgpCUX2i6PjjIj": "{{9.error.message}}",
+                                            "fldlOljW0H97T8xLa": "Update Publicado"
+                                        },
+                                        "typecast": false,
+                                        "useColumnId": false
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 892,
+                                            "y": -62
+                                        },
+                                        "setupValidation": {
+                                            "result": {
+                                                "valid": true,
+                                                "fields": []
+                                            },
+                                            "version": 1,
+                                            "configuration": "58c41797bdf57bc0"
+                                        },
+                                        "restore": {
+                                            "expect": {
+                                                "base": {
+                                                    "label": "Pipeline de Contenido"
+                                                },
+                                                "table": {
+                                                    "label": "Log de Errores",
+                                                    "nested": [
+                                                        {
+                                                            "name": "record",
+                                                            "spec": [
+                                                                {
+                                                                    "name": "fldlOljW0H97T8xLa",
+                                                                    "type": "text",
+                                                                    "label": "Modulo"
+                                                                },
+                                                                {
+                                                                    "name": "fldIgpCUX2i6PjjIj",
+                                                                    "type": "text",
+                                                                    "label": "Mensaje",
+                                                                    "multiline": true
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "label": "Record"
+                                                        }
+                                                    ]
+                                                },
+                                                "typecast": {
+                                                    "mode": "chose"
+                                                },
+                                                "useColumnId": {
+                                                    "mode": "chose"
+                                                }
+                                            },
+                                            "parameters": {
+                                                "__IMTCONN__": {
+                                                    "data": {
+                                                        "scoped": "true",
+                                                        "connection": "airtable2"
+                                                    },
+                                                    "label": "agustina's Airtable Token or Key connection"
+                                                }
+                                            }
+                                        },
+                                        "parameters": [
+                                            {
+                                                "name": "__IMTCONN__",
+                                                "type": "account:airtable3,airtable2",
+                                                "label": "Connection",
+                                                "required": true
+                                            }
+                                        ],
+                                        "expect": [
+                                            {
+                                                "name": "base",
+                                                "type": "select",
+                                                "label": "Base",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "typecast",
+                                                "type": "boolean",
+                                                "label": "Smart links",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "useColumnId",
+                                                "type": "boolean",
+                                                "label": "Use Column ID",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "table",
+                                                "type": "select",
+                                                "label": "Table",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "record",
+                                                "spec": [
+                                                    {
+                                                        "name": "fldlOljW0H97T8xLa",
+                                                        "type": "text",
+                                                        "label": "Modulo"
+                                                    },
+                                                    {
+                                                        "name": "fldIgpCUX2i6PjjIj",
+                                                        "type": "text",
+                                                        "label": "Mensaje"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Record"
+                                            }
+                                        ],
+                                        "interface": [
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "ID"
+                                            },
+                                            {
+                                                "name": "createdTime",
+                                                "type": "date",
+                                                "label": "Created Time"
+                                            },
+                                            {
+                                                "name": "Modulo",
+                                                "type": "text",
+                                                "label": "Modulo"
+                                            },
+                                            {
+                                                "name": "Fecha",
+                                                "type": "date",
+                                                "label": "Fecha"
+                                            },
+                                            {
+                                                "name": "Mensaje",
+                                                "type": "text",
+                                                "label": "Mensaje",
+                                                "multiline": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 12,
+                            "module": "slack:CreateMessage",
+                            "version": 4,
+                            "parameters": {
+                                "__IMTCONN__": 11029679
+                            },
+                            "mapper": {
+                                "text": "✅ Publicado:{{1.`Idea Semilla`}}\n{{1.`Contenido Generado`}}",
+                                "parse": false,
+                                "mrkdwn": true,
+                                "channel": "contenido-publicado",
+                                "channelWType": "manualy"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": -300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parse": {
+                                            "mode": "chose"
+                                        },
+                                        "mrkdwn": {
+                                            "mode": "chose"
+                                        },
+                                        "link_names": {
+                                            "mode": "chose"
+                                        },
+                                        "channelWType": {
+                                            "label": "Enter manually"
+                                        },
+                                        "unfurl_links": {
+                                            "mode": "chose"
+                                        },
+                                        "unfurl_media": {
+                                            "mode": "chose"
+                                        },
+                                        "reply_broadcast": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "slack3"
+                                            },
+                                            "label": "agustina's Slack (bot) connection (pefinalautomation.slack.com - make)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:slack2,slack3",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "channelWType",
+                                        "type": "select",
+                                        "label": "Enter a channel ID or name",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "manualy",
+                                                "list"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text"
+                                    },
+                                    {
+                                        "name": "blocks",
+                                        "type": "text",
+                                        "label": "Blocks"
+                                    },
+                                    {
+                                        "name": "thread_ts",
+                                        "type": "text",
+                                        "label": "Thread message ID (time stamp)"
+                                    },
+                                    {
+                                        "name": "reply_broadcast",
+                                        "type": "boolean",
+                                        "label": "Reply broadcast"
+                                    },
+                                    {
+                                        "name": "link_names",
+                                        "type": "boolean",
+                                        "label": "Link names"
+                                    },
+                                    {
+                                        "name": "parse",
+                                        "type": "boolean",
+                                        "label": "Parse message text"
+                                    },
+                                    {
+                                        "name": "mrkdwn",
+                                        "type": "boolean",
+                                        "label": "Use markdown"
+                                    },
+                                    {
+                                        "name": "unfurl_links",
+                                        "type": "boolean",
+                                        "label": "Unfurl primarily text-based content"
+                                    },
+                                    {
+                                        "name": "unfurl_media",
+                                        "type": "boolean",
+                                        "label": "Unfurl media content"
+                                    },
+                                    {
+                                        "name": "icon_emoji",
+                                        "type": "text",
+                                        "label": "Icon emoji"
+                                    },
+                                    {
+                                        "name": "icon_url",
+                                        "type": "url",
+                                        "label": "Icon url"
+                                    },
+                                    {
+                                        "name": "username",
+                                        "type": "text",
+                                        "label": "User name"
+                                    },
+                                    {
+                                        "name": "channel",
+                                        "type": "text",
+                                        "label": "Channel ID or name",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "conditions": [
+                        [
+                            {
+                                "a": "{{1.Estado}}",
+                                "b": "En revisión",
+                                "o": "text:equal"
+                            },
+                            {
+                                "a": "{{1.Aprobado}}",
+                                "b": "true",
+                                "o": "text:equal"
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "merge": false,
+                    "disabled": false,
+                    "label": "",
+                    "type": "else",
+                    "flow": [
+                        {
+                            "id": 8,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 11030309
+                            },
+                            "filter": null,
+                            "mapper": {
+                                "id": "{{1.id}}",
+                                "base": "appCtyPCA4QGzyXR5",
+                                "table": "tblPQPkpH8S5B10wz",
+                                "record": {
+                                    "fldy31baX8Oh2nd3p": "Rechazado"
+                                },
+                                "typecast": false,
+                                "useColumnId": false
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 300
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "c951182258d314e6"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "base": {
+                                            "label": "Pipeline de Contenido"
+                                        },
+                                        "table": {
+                                            "label": "Contenidos"
+                                        },
+                                        "record": {
+                                            "nested": {
+                                                "fld6JB1sbyKB4MpEp": {
+                                                    "mode": "chose"
+                                                },
+                                                "fldTXImBdbjlOiMhp": {
+                                                    "mode": "chose"
+                                                },
+                                                "fldVY0KxBjBhufzln": {
+                                                    "mode": "edit"
+                                                },
+                                                "fldW5uce1jnvLRi9A": {
+                                                    "mode": "edit"
+                                                },
+                                                "fldy31baX8Oh2nd3p": {
+                                                    "mode": "edit"
+                                                }
+                                            }
+                                        },
+                                        "typecast": {
+                                            "mode": "chose"
+                                        },
+                                        "useColumnId": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "airtable2"
+                                            },
+                                            "label": "agustina's Airtable Token or Key connection"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:airtable3,airtable2",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "base",
+                                        "type": "select",
+                                        "label": "Base",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "typecast",
+                                        "type": "boolean",
+                                        "label": "Smart links",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "useColumnId",
+                                        "type": "boolean",
+                                        "label": "Use Column ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "table",
+                                        "type": "select",
+                                        "label": "Table",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Record ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "record",
+                                        "spec": [
+                                            {
+                                                "name": "fldqJiCaresz5IMBM",
+                                                "type": "text",
+                                                "label": "Idea Semilla"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldW5uce1jnvLRi9A",
+                                                "type": "select",
+                                                "label": "Categoria"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldy31baX8Oh2nd3p",
+                                                "type": "select",
+                                                "label": "Estado"
+                                            },
+                                            {
+                                                "name": "fldnuLJYcGG4fi2pb",
+                                                "type": "text",
+                                                "label": "Contenido Generado"
+                                            },
+                                            {
+                                                "name": "fld6JB1sbyKB4MpEp",
+                                                "type": "boolean",
+                                                "label": "Aprobado"
+                                            },
+                                            {
+                                                "mode": "edit",
+                                                "name": "fldVY0KxBjBhufzln",
+                                                "type": "select",
+                                                "label": "Canal"
+                                            },
+                                            {
+                                                "name": "fldIMeslLRktRCZ5F",
+                                                "time": false,
+                                                "type": "date",
+                                                "label": "Fecha de Aprobación"
+                                            },
+                                            {
+                                                "name": "fldTXImBdbjlOiMhp",
+                                                "type": "boolean",
+                                                "label": "Notificado"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Record"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "ID"
+                                    },
+                                    {
+                                        "name": "createdTime",
+                                        "type": "date",
+                                        "label": "Created Time"
+                                    },
+                                    {
+                                        "name": "Idea Semilla",
+                                        "type": "text",
+                                        "label": "Idea Semilla",
+                                        "multiline": true
+                                    },
+                                    {
+                                        "name": "Categoria",
+                                        "type": "text",
+                                        "label": "Categoria"
+                                    },
+                                    {
+                                        "name": "Estado",
+                                        "type": "text",
+                                        "label": "Estado"
+                                    },
+                                    {
+                                        "name": "Contenido Generado",
+                                        "type": "text",
+                                        "label": "Contenido Generado",
+                                        "multiline": true
+                                    },
+                                    {
+                                        "name": "Aprobado",
+                                        "type": "boolean",
+                                        "label": "Aprobado"
+                                    },
+                                    {
+                                        "name": "Canal",
+                                        "type": "text",
+                                        "label": "Canal"
+                                    },
+                                    {
+                                        "name": "Fecha de Aprobación",
+                                        "time": false,
+                                        "type": "date",
+                                        "label": "Fecha de Aprobación"
+                                    },
+                                    {
+                                        "name": "Ultima Modificacion",
+                                        "type": "date",
+                                        "label": "Ultima Modificacion"
+                                    },
+                                    {
+                                        "name": "Notificado",
+                                        "type": "boolean",
+                                        "label": "Notificado"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 18,
+                                    "module": "airtable:ActionCreateRecord",
+                                    "version": 3,
+                                    "parameters": {
+                                        "__IMTCONN__": 11030309
+                                    },
+                                    "mapper": {
+                                        "base": "appCtyPCA4QGzyXR5",
+                                        "table": "tblgYFeGeFImx8eZe",
+                                        "record": {
+                                            "fldIgpCUX2i6PjjIj": "{{8.error.message}}",
+                                            "fldlOljW0H97T8xLa": "Update Rechazado"
+                                        },
+                                        "typecast": false,
+                                        "useColumnId": false
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 897,
+                                            "y": 178
+                                        },
+                                        "setupValidation": {
+                                            "result": {
+                                                "valid": true,
+                                                "fields": []
+                                            },
+                                            "version": 1,
+                                            "configuration": "34908ff5530be8cf"
+                                        },
+                                        "restore": {
+                                            "expect": {
+                                                "base": {
+                                                    "label": "Pipeline de Contenido"
+                                                },
+                                                "table": {
+                                                    "label": "Log de Errores",
+                                                    "nested": [
+                                                        {
+                                                            "name": "record",
+                                                            "spec": [
+                                                                {
+                                                                    "name": "fldlOljW0H97T8xLa",
+                                                                    "type": "text",
+                                                                    "label": "Modulo"
+                                                                },
+                                                                {
+                                                                    "name": "fldIgpCUX2i6PjjIj",
+                                                                    "type": "text",
+                                                                    "label": "Mensaje",
+                                                                    "multiline": true
+                                                                }
+                                                            ],
+                                                            "type": "collection",
+                                                            "label": "Record"
+                                                        }
+                                                    ]
+                                                },
+                                                "typecast": {
+                                                    "mode": "chose"
+                                                },
+                                                "useColumnId": {
+                                                    "mode": "chose"
+                                                }
+                                            },
+                                            "parameters": {
+                                                "__IMTCONN__": {
+                                                    "data": {
+                                                        "scoped": "true",
+                                                        "connection": "airtable2"
+                                                    },
+                                                    "label": "agustina's Airtable Token or Key connection"
+                                                }
+                                            }
+                                        },
+                                        "parameters": [
+                                            {
+                                                "name": "__IMTCONN__",
+                                                "type": "account:airtable3,airtable2",
+                                                "label": "Connection",
+                                                "required": true
+                                            }
+                                        ],
+                                        "expect": [
+                                            {
+                                                "name": "base",
+                                                "type": "select",
+                                                "label": "Base",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "typecast",
+                                                "type": "boolean",
+                                                "label": "Smart links",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "useColumnId",
+                                                "type": "boolean",
+                                                "label": "Use Column ID",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "table",
+                                                "type": "select",
+                                                "label": "Table",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "record",
+                                                "spec": [
+                                                    {
+                                                        "name": "fldlOljW0H97T8xLa",
+                                                        "type": "text",
+                                                        "label": "Modulo"
+                                                    },
+                                                    {
+                                                        "name": "fldIgpCUX2i6PjjIj",
+                                                        "type": "text",
+                                                        "label": "Mensaje"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Record"
+                                            }
+                                        ],
+                                        "interface": [
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "ID"
+                                            },
+                                            {
+                                                "name": "createdTime",
+                                                "type": "date",
+                                                "label": "Created Time"
+                                            },
+                                            {
+                                                "name": "Modulo",
+                                                "type": "text",
+                                                "label": "Modulo"
+                                            },
+                                            {
+                                                "name": "Fecha",
+                                                "type": "date",
+                                                "label": "Fecha"
+                                            },
+                                            {
+                                                "name": "Mensaje",
+                                                "type": "text",
+                                                "label": "Mensaje",
+                                                "multiline": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": [
+                [
+                    {
+                        "id": 20,
+                        "module": "placeholder:Placeholder",
+                        "filter": null,
+                        "metadata": {
+                            "designer": {
+                                "x": 176,
+                                "y": 250
+                            }
+                        }
+                    }
+                ]
+            ]
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

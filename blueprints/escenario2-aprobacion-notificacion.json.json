@@ -1,0 +1,881 @@
+{
+    "name": "Final - Escenario 2 - Aprobacion y Publicacion",
+    "flow": [
+        {
+            "id": 1,
+            "module": "airtable:TriggerWatchRecords",
+            "version": 3,
+            "parameters": {
+                "base": "appCtyPCA4QGzyXR5",
+                "table": "tblPQPkpH8S5B10wz",
+                "config": {
+                    "labelField": "Idea Semilla",
+                    "triggerField": "Ultima Modificacion"
+                },
+                "maxRecords": 10,
+                "__IMTCONN__": 10717317,
+                "useColumnId": false
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "parameters": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Pipeline de Contenido"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Contenidos"
+                        },
+                        "config": {
+                            "nested": {
+                                "labelField": {
+                                    "mode": "chose",
+                                    "label": "Idea Semilla"
+                                },
+                                "triggerField": {
+                                    "mode": "chose",
+                                    "label": "Ultima Modificacion"
+                                }
+                            }
+                        },
+                        "__IMTCONN__": {
+                            "label": "agustina's Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "on": {
+                            "change": "reset_epoch"
+                        },
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    },
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "config",
+                        "spec": [
+                            {
+                                "name": "triggerField",
+                                "type": "select",
+                                "label": "Trigger field",
+                                "required": true
+                            },
+                            {
+                                "name": "triggerField",
+                                "type": "hidden",
+                                "default": "createdTime"
+                            },
+                            {
+                                "name": "labelField",
+                                "type": "select",
+                                "label": "Label field",
+                                "required": true
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Trigger configuration",
+                        "required": false
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit",
+                        "default": 10,
+                        "required": true
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "default": false,
+                        "advanced": true,
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "Idea Semilla",
+                        "type": "text",
+                        "label": "Idea Semilla",
+                        "multiline": true
+                    },
+                    {
+                        "name": "Categoria",
+                        "type": "text",
+                        "label": "Categoria"
+                    },
+                    {
+                        "name": "Estado",
+                        "type": "text",
+                        "label": "Estado"
+                    },
+                    {
+                        "name": "Contenido Generado",
+                        "type": "text",
+                        "label": "Contenido Generado",
+                        "multiline": true
+                    },
+                    {
+                        "name": "Aprobado",
+                        "type": "boolean",
+                        "label": "Aprobado"
+                    },
+                    {
+                        "name": "Canal",
+                        "type": "text",
+                        "label": "Canal"
+                    },
+                    {
+                        "name": "Fecha de Aprobación",
+                        "time": false,
+                        "type": "date",
+                        "label": "Fecha de Aprobación"
+                    },
+                    {
+                        "name": "Ultima Modificacion",
+                        "type": "date",
+                        "label": "Ultima Modificacion"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "slack:CreateMessage",
+            "version": 4,
+            "parameters": {
+                "__IMTCONN__": 11029679
+            },
+            "filter": {
+                "name": "Solo en revisión",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{1.Estado}}",
+                            "b": "En revisión",
+                            "o": "text:equal"
+                        },
+                        {
+                            "a": "{{1.Notificado}}",
+                            "b": "true",
+                            "o": "number:notequal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "text": "📋 Nuevo contenido para revisar\n\nIdea Semilla: {{1.`Idea Semilla`}}\nCategoría: {{1.Categoria}}\nCanal destino: {{1.Canal}}\n\nContenido generado:\n{{1.`Contenido Generado`}}\n\nRevisá y aprobá desde Airtable 👉",
+                "channel": "C0C12LQCXJR",
+                "channelType": "public",
+                "channelWType": "list"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "channel": {
+                            "mode": "chose",
+                            "label": "aprobaciones-contenido"
+                        },
+                        "channelType": {
+                            "mode": "chose",
+                            "label": "Public channel",
+                            "nested": [
+                                {
+                                    "name": "channel",
+                                    "type": "select",
+                                    "label": "Public channel",
+                                    "options": "rpc://slack@4/PublicChannels",
+                                    "required": true
+                                }
+                            ]
+                        },
+                        "channelWType": {
+                            "mode": "chose",
+                            "label": "Select from the list",
+                            "nested": [
+                                {
+                                    "name": "channelType",
+                                    "type": "select",
+                                    "label": "Channel type",
+                                    "options": [
+                                        {
+                                            "label": "Public channel",
+                                            "value": "public",
+                                            "nested": [
+                                                {
+                                                    "name": "channel",
+                                                    "type": "select",
+                                                    "label": "Public channel",
+                                                    "options": "rpc://slack@4/PublicChannels",
+                                                    "required": true
+                                                }
+                                            ],
+                                            "default": true
+                                        },
+                                        {
+                                            "label": "Private channel",
+                                            "value": "private",
+                                            "nested": [
+                                                {
+                                                    "name": "channel",
+                                                    "type": "select",
+                                                    "label": "Private channel",
+                                                    "options": "rpc://slack@4/PrivateChannels",
+                                                    "required": true
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "Direct message",
+                                            "value": "im",
+                                            "nested": [
+                                                {
+                                                    "name": "idType",
+                                                    "type": "select",
+                                                    "label": "ID type",
+                                                    "default": "channel",
+                                                    "options": {
+                                                        "store": [
+                                                            {
+                                                                "label": "Channel ID",
+                                                                "value": "channel",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "channel",
+                                                                        "type": "select",
+                                                                        "label": "User (Channel ID)",
+                                                                        "options": "rpc://slack@4/IMChannels",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "User ID",
+                                                                "value": "user",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "channel",
+                                                                        "type": "text",
+                                                                        "label": "User (User ID)",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "label": "Username",
+                                                                "value": "username",
+                                                                "nested": [
+                                                                    {
+                                                                        "name": "channel",
+                                                                        "type": "text",
+                                                                        "label": "User (Username)",
+                                                                        "required": true
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
+                                                    "required": true
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "Direct message to multiple people",
+                                            "value": "mpim",
+                                            "nested": [
+                                                {
+                                                    "name": "channel",
+                                                    "type": "select",
+                                                    "label": "Direct message to multiple people",
+                                                    "options": "rpc://slack@4/MPIMChannels",
+                                                    "required": true
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "mappable": false,
+                                    "required": true
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "agustina's Slack (bot) connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:slack2,slack3",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "channelWType",
+                        "type": "select",
+                        "label": "Enter a channel ID or name",
+                        "mappable": false,
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "manualy",
+                                "list"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "channelType",
+                        "type": "select",
+                        "label": "Channel type",
+                        "mappable": false,
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "public",
+                                "private",
+                                "im",
+                                "mpim"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "channel",
+                        "type": "select",
+                        "label": "Public channel",
+                        "required": true
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Text",
+                        "required": false
+                    },
+                    {
+                        "name": "blocks",
+                        "type": "text",
+                        "label": "Blocks",
+                        "required": false
+                    },
+                    {
+                        "name": "thread_ts",
+                        "type": "text",
+                        "label": "Thread message ID (time stamp)",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "reply_broadcast",
+                        "type": "boolean",
+                        "label": "Reply broadcast",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "link_names",
+                        "type": "boolean",
+                        "label": "Link names",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "parse",
+                        "type": "boolean",
+                        "label": "Parse message text",
+                        "default": false,
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "mrkdwn",
+                        "type": "boolean",
+                        "label": "Use markdown",
+                        "default": true,
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "unfurl_links",
+                        "type": "boolean",
+                        "label": "Unfurl primarily text-based content",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "unfurl_media",
+                        "type": "boolean",
+                        "label": "Unfurl media content",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "icon_emoji",
+                        "type": "text",
+                        "label": "Icon emoji",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "icon_url",
+                        "type": "url",
+                        "label": "Icon url",
+                        "advanced": true,
+                        "required": false
+                    },
+                    {
+                        "name": "username",
+                        "type": "text",
+                        "label": "User name",
+                        "advanced": true,
+                        "required": false
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "airtable:ActionUpdateRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 10717317
+            },
+            "mapper": {
+                "id": "{{1.id}}",
+                "base": "appCtyPCA4QGzyXR5",
+                "table": "tblPQPkpH8S5B10wz",
+                "record": {
+                    "fldTXImBdbjlOiMhp": true
+                },
+                "typecast": false,
+                "useColumnId": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "label": "Pipeline de Contenido"
+                        },
+                        "table": {
+                            "label": "Contenidos"
+                        },
+                        "record": {
+                            "nested": {
+                                "fld6JB1sbyKB4MpEp": {
+                                    "mode": "chose"
+                                },
+                                "fldTXImBdbjlOiMhp": {
+                                    "mode": "chose"
+                                },
+                                "fldVY0KxBjBhufzln": {
+                                    "mode": "edit"
+                                },
+                                "fldW5uce1jnvLRi9A": {
+                                    "mode": "edit"
+                                },
+                                "fldy31baX8Oh2nd3p": {
+                                    "mode": "edit"
+                                }
+                            }
+                        },
+                        "typecast": {
+                            "mode": "chose"
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "agustina's Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "typecast",
+                        "type": "boolean",
+                        "label": "Smart links",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "Record ID",
+                        "required": true
+                    },
+                    {
+                        "name": "record",
+                        "spec": [
+                            {
+                                "name": "fldqJiCaresz5IMBM",
+                                "type": "text",
+                                "label": "Idea Semilla"
+                            },
+                            {
+                                "mode": "edit",
+                                "name": "fldW5uce1jnvLRi9A",
+                                "type": "select",
+                                "label": "Categoria"
+                            },
+                            {
+                                "mode": "edit",
+                                "name": "fldy31baX8Oh2nd3p",
+                                "type": "select",
+                                "label": "Estado"
+                            },
+                            {
+                                "name": "fldnuLJYcGG4fi2pb",
+                                "type": "text",
+                                "label": "Contenido Generado"
+                            },
+                            {
+                                "name": "fld6JB1sbyKB4MpEp",
+                                "type": "boolean",
+                                "label": "Aprobado"
+                            },
+                            {
+                                "mode": "edit",
+                                "name": "fldVY0KxBjBhufzln",
+                                "type": "select",
+                                "label": "Canal"
+                            },
+                            {
+                                "name": "fldIMeslLRktRCZ5F",
+                                "time": false,
+                                "type": "date",
+                                "label": "Fecha de Aprobación"
+                            },
+                            {
+                                "name": "fldTXImBdbjlOiMhp",
+                                "type": "boolean",
+                                "label": "Notificado"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Record"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "fldqJiCaresz5IMBM",
+                        "type": "text",
+                        "label": "Idea Semilla",
+                        "multiline": true
+                    },
+                    {
+                        "name": "fldW5uce1jnvLRi9A",
+                        "type": "text",
+                        "label": "Categoria"
+                    },
+                    {
+                        "name": "fldy31baX8Oh2nd3p",
+                        "type": "text",
+                        "label": "Estado"
+                    },
+                    {
+                        "name": "fldnuLJYcGG4fi2pb",
+                        "type": "text",
+                        "label": "Contenido Generado",
+                        "multiline": true
+                    },
+                    {
+                        "name": "fld6JB1sbyKB4MpEp",
+                        "type": "boolean",
+                        "label": "Aprobado"
+                    },
+                    {
+                        "name": "fldVY0KxBjBhufzln",
+                        "type": "text",
+                        "label": "Canal"
+                    },
+                    {
+                        "name": "fldIMeslLRktRCZ5F",
+                        "time": false,
+                        "type": "date",
+                        "label": "Fecha de Aprobación"
+                    },
+                    {
+                        "name": "fldfcfodLDCrsqxzI",
+                        "type": "date",
+                        "label": "Ultima Modificacion"
+                    },
+                    {
+                        "name": "fldTXImBdbjlOiMhp",
+                        "type": "boolean",
+                        "label": "Notificado"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 4,
+                    "module": "airtable:ActionCreateRecord",
+                    "version": 3,
+                    "parameters": {
+                        "__IMTCONN__": 10717317
+                    },
+                    "mapper": {
+                        "base": "appCtyPCA4QGzyXR5",
+                        "table": "tblgYFeGeFImx8eZe",
+                        "record": {
+                            "fldIgpCUX2i6PjjIj": "{{3.error.message}}",
+                            "fldlOljW0H97T8xLa": "Update Notificado"
+                        },
+                        "typecast": false,
+                        "useColumnId": false
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 0
+                        },
+                        "setupValidation": {
+                            "result": {
+                                "valid": true,
+                                "fields": []
+                            },
+                            "version": 1,
+                            "configuration": "e2733f8acdc5e3ed"
+                        },
+                        "restore": {
+                            "expect": {
+                                "base": {
+                                    "label": "Pipeline de Contenido"
+                                },
+                                "table": {
+                                    "label": "Log de Errores",
+                                    "nested": [
+                                        {
+                                            "name": "record",
+                                            "spec": [
+                                                {
+                                                    "name": "fldlOljW0H97T8xLa",
+                                                    "type": "text",
+                                                    "label": "Modulo"
+                                                },
+                                                {
+                                                    "name": "fldIgpCUX2i6PjjIj",
+                                                    "type": "text",
+                                                    "label": "Mensaje",
+                                                    "multiline": true
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Record"
+                                        }
+                                    ]
+                                },
+                                "typecast": {
+                                    "mode": "chose"
+                                },
+                                "useColumnId": {
+                                    "mode": "chose"
+                                }
+                            },
+                            "parameters": {
+                                "__IMTCONN__": {
+                                    "data": {
+                                        "scoped": "true",
+                                        "connection": "airtable2"
+                                    },
+                                    "label": "agustina's Airtable Token or Key connection"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "__IMTCONN__",
+                                "type": "account:airtable3,airtable2",
+                                "label": "Connection",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "base",
+                                "type": "select",
+                                "label": "Base",
+                                "required": true
+                            },
+                            {
+                                "name": "typecast",
+                                "type": "boolean",
+                                "label": "Smart links",
+                                "required": true
+                            },
+                            {
+                                "name": "useColumnId",
+                                "type": "boolean",
+                                "label": "Use Column ID",
+                                "required": true
+                            },
+                            {
+                                "name": "table",
+                                "type": "select",
+                                "label": "Table",
+                                "required": true
+                            },
+                            {
+                                "name": "record",
+                                "spec": [
+                                    {
+                                        "name": "fldlOljW0H97T8xLa",
+                                        "type": "text",
+                                        "label": "Modulo"
+                                    },
+                                    {
+                                        "name": "fldIgpCUX2i6PjjIj",
+                                        "type": "text",
+                                        "label": "Mensaje"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Record"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "id",
+                                "type": "text",
+                                "label": "ID"
+                            },
+                            {
+                                "name": "createdTime",
+                                "type": "date",
+                                "label": "Created Time"
+                            },
+                            {
+                                "name": "Modulo",
+                                "type": "text",
+                                "label": "Modulo"
+                            },
+                            {
+                                "name": "Fecha",
+                                "type": "date",
+                                "label": "Fecha"
+                            },
+                            {
+                                "name": "Mensaje",
+                                "type": "text",
+                                "label": "Mensaje",
+                                "multiline": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}
