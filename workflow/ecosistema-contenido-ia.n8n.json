@@ -247,7 +247,7 @@
               "defaultMatch": false,
               "canBeUsedToMatch": true,
               "display": true,
-              "type": "options",
+              "type": "string",
               "readOnly": false,
               "removed": false
             }
@@ -1052,7 +1052,7 @@
               "defaultMatch": false,
               "canBeUsedToMatch": true,
               "display": true,
-              "type": "options",
+              "type": "string",
               "readOnly": false,
               "removed": false
             }
@@ -1189,7 +1189,7 @@
               "defaultMatch": false,
               "canBeUsedToMatch": true,
               "display": true,
-              "type": "options",
+              "type": "string",
               "readOnly": false,
               "removed": false
             },
@@ -1373,7 +1373,7 @@
               "defaultMatch": false,
               "canBeUsedToMatch": true,
               "display": true,
-              "type": "options",
+              "type": "string",
               "readOnly": false,
               "removed": false
             },
@@ -1688,7 +1688,7 @@
               "defaultMatch": false,
               "canBeUsedToMatch": true,
               "display": true,
-              "type": "options",
+              "type": "string",
               "readOnly": false,
               "removed": false
             }
