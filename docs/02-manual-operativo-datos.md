@@ -79,7 +79,7 @@ Todos los ejemplos son reales en estructura. Los IDs se acortaron.
   "cfg": {
     "modeloIA": "gemini-3.6-flash", "maxTokens": 1000, "temperatura": 0.7,
     "maxPalabras": 200, "minCaracteresIdea": 10,
-    "canalAprobaciones": "C0C12LQCXJR", "canalPublicacion": "contenido-publicado",
+    "canalAprobaciones": "C0C12LQCXJR", "canalPublicacion": "C0C1128NG67",
     "canalAlertas": "C0C12LQCXJR", "horasEsperaHITL": 24
   }
 }

@@ -58,7 +58,7 @@
             {
               "id": "3ae7ef0b-de12-5882-89b4-279f11374569",
               "name": "cfg",
-              "value": "={{ {\n  modeloIA: 'gemini-3.6-flash',\n  maxTokens: 1000,\n  temperatura: 0.7,\n  maxPalabras: 200,\n  minCaracteresIdea: 10,\n  canalAprobaciones: 'C0C12LQCXJR',\n  canalPublicacion: 'contenido-publicado',\n  canalAlertas: 'C0C12LQCXJR',\n  horasEsperaHITL: 24\n} }}",
+              "value": "={{ {\n  modeloIA: 'gemini-3.6-flash',\n  maxTokens: 1000,\n  temperatura: 0.7,\n  maxPalabras: 200,\n  minCaracteresIdea: 10,\n  canalAprobaciones: 'C0C12LQCXJR',\n  canalPublicacion: 'C0C1128NG67',\n  canalAlertas: 'C0C12LQCXJR',\n  horasEsperaHITL: 24\n} }}",
               "type": "object"
             }
           ]
@@ -1275,7 +1275,7 @@
           "value": "={{ $('🔀 Router de subworkflows').first().json.cfg.canalAprobaciones }}",
           "mode": "id"
         },
-        "text": "=✅ Aprobado por revisión humana y publicado en #{{ $('🔀 Router de subworkflows').first().json.cfg.canalPublicacion }}. Estado en Airtable: *Publicado*.",
+        "text": "=✅ Aprobado por revisión humana y publicado en <#{{ $('🔀 Router de subworkflows').first().json.cfg.canalPublicacion }}>. Estado en Airtable: *Publicado*.",
         "otherOptions": {
           "includeLinkToWorkflow": false,
           "thread_ts": {
