@@ -34,9 +34,9 @@ section {{ page-break-before: always; }} .full {{ width:100%; border:1px solid #
 </table>
 <h2>Enlaces</h2>
 <table>
-<tr><th>Workflow n8n (.json)</th><td>https://github.com/aguscisneros1/entrega-final/blob/main/workflow/ecosistema-contenido-ia.n8n.json</td></tr>
-<tr><th>Repositorio</th><td>https://github.com/aguscisneros1/entrega-final</td></tr>
-<tr><th>Dashboard de control (Shared View)</th><td>https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF</td></tr>
+<tr><th>Workflow n8n (.json)</th><td>https://github.com/aguscisneros1/entrega-final/blob/claude/ia-automation-unified-workflow-iuscap/workflow/ecosistema-contenido-ia.n8n.json</td></tr>
+<tr><th>Repositorio</th><td>https://github.com/aguscisneros1/entrega-final/tree/claude/ia-automation-unified-workflow-iuscap</td></tr>
+<tr><th>Dashboard de control (Shared View)</th><td>https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt</td></tr>
 <tr><th>Base de datos (lectura)</th><td>[completar]</td></tr>
 <tr><th>Video demo (3 min)</th><td>[completar]</td></tr>
 </table>

@@ -35,7 +35,7 @@ Los blueprints de Make del intento 1 quedan en [`legacy/make/`](legacy/make) sol
 
 ## Enlaces
 
-- **Dashboard de control (Shared View):** https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF *(si se crea la vista de KPIs nueva, reemplazar este link por el nuevo)*
+- **Dashboard de control (Shared View):** https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt (vista **KPIs del sistema**)
 - **Base de datos en modo lectura:** _pegar acá el link de lectura de la base "Pipeline de Contenido"_
 - **Documento público (Google Doc / Notion):** _pegar acá el link_
 - **Video demo (3 min):** _pegar acá el link_
@@ -45,7 +45,7 @@ Los blueprints de Make del intento 1 quedan en [`legacy/make/`](legacy/make) sol
 ### Requisitos
 - n8n Cloud o self-hosted **accesible desde internet**: los botones de Slack reanudan la ejecución a través de una URL de n8n.
 - Credenciales creadas en n8n:
-  - **Airtable Personal Access Token** (scopes `data.records:read`, `data.records:write`, `schema.bases:read` sobre las 2 bases).
+  - **Airtable Personal Access Token** (recomendado sobre OAuth2: con OAuth2, si la base está en otro espacio de trabajo n8n recibe 403; scopes `data.records:read`, `data.records:write`, `schema.bases:read` sobre las 2 bases).
   - **Slack** (OAuth2 o bot token con `chat:write`, `channels:read`), con el bot invitado a `#aprobaciones-contenido` y `#contenido-publicado`.
   - **Google Gemini (PaLM) API** con la API key de Google AI Studio.
 
@@ -58,7 +58,7 @@ Los blueprints de Make del intento 1 quedan en [`legacy/make/`](legacy/make) sol
 3. **Credenciales:** abrir cada nodo de Airtable, Slack y `🤖 IA · Gemini` y elegir la credencial. Si un canal de Slack aparece marcado, volver a elegirlo de la lista.
 4. **Configuración:** revisar el nodo `⚙️ Configuración del sistema` (modelo, tokens, canales, horas de espera del HITL). Los IDs de base y tabla ya corresponden a la base del proyecto.
 5. **Guardar** el workflow. Los subworkflows se invocan con `$workflow.id`, así que el workflow tiene que estar guardado.
-6. **Red de seguridad:** *Workflow Settings → Error workflow →* elegir **este mismo workflow**. Así se activa `🛟 Error Trigger`.
+6. **Red de seguridad (opcional):** *Workflow Settings → Error workflow →* elegir este mismo workflow para activar `🛟 Error Trigger`. Algunas versiones de n8n Cloud no permiten elegirse a sí mismo; en ese caso se omite, porque todos los errores previstos ya los maneja SUB 4.
 7. **Activar** el workflow (toggle *Active*).
 8. **Probar:** en Airtable, crear una fila con Idea Semilla, Categoria, Canal y **Estado = Generando**. En menos de 1 minuto llega la pieza a Slack. La ejecución queda en **Waiting** hasta apretar ✅ o ❌.
 

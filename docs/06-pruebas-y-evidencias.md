@@ -26,14 +26,14 @@
 8. Dashboard (Shared View) abierto en incógnito, con los 3 KPIs.
 9. Credenciales de n8n ocultas: se muestran solo los nombres, nunca las keys.
 
-## 6.3 Registro de corridas
+## 6.3 Resultados de las corridas (1 de octubre de 2026, n8n Cloud)
 
-Completar después de ejecutar:
+| # | Hora | Caso | Resultado observado | Estado final en Airtable |
+|---|---|---|---|---|
+| 1 | 11:21 | Credencial de Airtable sin acceso a la base (403) | Error output del Anti-bucle → SUB 4 → alerta en Slack "Forbidden". Se corrigió con un Personal Access Token | — |
+| 2 | 11:30 | Fallo real de la API de IA (Gemini 503 *Service unavailable*) | 3 reintentos automáticos; luego SUB 4: alerta en Slack y Estado **Error** | Error |
+| 3 | 11:38 | **Camino feliz + HITL**: borrador generado con RAG y enviado a revisión | La ejecución quedó en **"Esperando"** hasta el clic; al aprobar, SUB 2 publicó en #contenido-publicado | **Publicado** |
+| 4 | 11:48 | Rechazo humano ("Cómo fijar tus tarifas como freelancer") | Clic en ❌ Rechazar → SUB 3, aviso en el hilo; nada en el canal de salida | **Rechazado** |
+| 5 | 11:52 | Camino infeliz: Idea Semilla vacía | La IA no se invocó; registro en Log de Errores (vinculado al contenido) y alerta en Slack "Datos faltantes: Idea Semilla vacía" | **Error** |
 
-| # | Fecha y hora | ID de ejecución n8n | Caso | Resultado | Estado final en Airtable |
-|---|---|---|---|---|---|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+Las 5 corridas cubren el camino feliz, el rechazo, la pausa HITL, el dato faltante y el fallo de API. Las capturas de cada una están en el documento público.

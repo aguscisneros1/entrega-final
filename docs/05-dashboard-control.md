@@ -2,9 +2,9 @@
 
 ## 5.1 Enlace público (Shared View)
 
-> **Dashboard de control (Shared View de Airtable):** https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF
+> **Dashboard de control (Shared View de Airtable, vista "KPIs del sistema"):** https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt
 >
-> ⚠️ Antes de entregar: abrir el link en una **ventana de incógnito**. Si pide iniciar sesión o solicitar acceso, todavía no es una Shared View. Si se crea una vista nueva de KPIs (paso 5.3), **reemplazar este link** por el nuevo `https://airtable.com/app…/shr…`.
+> ⚠️ Antes de entregar: abrir el link en una **ventana de incógnito**. Si pide iniciar sesión o solicitar acceso, todavía no es una Shared View.
 
 ## 5.2 KPIs que muestra
 
@@ -22,7 +22,7 @@
    - `KPI Aprobación` → `IF({Estado}='Publicado', 1, IF({Estado}='Rechazado', 0, BLANK()))`. Formato: porcentaje.
    - `KPI Salida` → `IF({Estado}='Publicado', 1, 0)`
    - `KPI Error` → `IF({Estado}='Error', 1, IF(OR({Estado}='Publicado', {Estado}='Rechazado'), 0, BLANK()))`. Formato: porcentaje.
-2. Crear una vista **Grid** llamada `📊 Dashboard KPIs`:
+2. Crear una vista **Grid** llamada `KPIs del sistema`:
    - Agrupar por **Estado**.
    - Mostrar solo: Idea Semilla, Categoria, Estado, Fecha de Aprobación, KPI Aprobación, KPI Salida, KPI Error y Errores (link).
    - En la **barra de resumen** (footer): `KPI Aprobación` → **Average** (tasa de aprobación), `KPI Salida` → **Sum** (volumen de salida), `KPI Error` → **Average** (tasa de error).

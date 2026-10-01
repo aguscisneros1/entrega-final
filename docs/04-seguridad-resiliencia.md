@@ -35,7 +35,7 @@ En n8n, lo equivalente a las directivas *Resume/Break* de Make es la opción **O
 | 8 | `💬 Slack · Enviar pieza a revisión` / `🧍 HITL` | Canal inválido, token revocado | Error output → SUB 4 | La pieza no queda "colgada" en revisión |
 | 9 | `✅ Publicado` / `📣 Publicar` / `🚫 Rechazado` | Error de Airtable o Slack | Error output → SUB 4 | — |
 | 10 | Llamadas `🧩 SUB 1..3` | Fallo inesperado del subworkflow | Error output → SUB 4 | — |
-| 11 | **Cualquier nodo** (error no previsto) | — | `🛟 Error Trigger · red de seguridad`: el workflow se configura como su propio *Error Workflow* | Log y alerta. Ningún fallo queda silencioso |
+| 11 | **Cualquier nodo** (error no previsto) | — | `🛟 Error Trigger · red de seguridad` (opcional: se activa configurando el workflow como su propio *Error Workflow*, si la versión de n8n lo permite) | Log y alerta. Ningún fallo queda silencioso |
 
 **SUB 4 · Registrar error** hace esto: crea el registro en `Log de Errores` **vinculado** al contenido, pone el contenido en `Estado = Error` y avisa en Slack. Los pasos no críticos usan *Continue*, así que el registrador en sí no puede fallar en cadena. Después de registrar, el loop sigue con el próximo registro.
 
