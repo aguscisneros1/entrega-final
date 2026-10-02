@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Diagrama de arquitectura</title>
+<style>
+  @page { size: A3 landscape; margin: 12mm; }
+  :root { --main:#1d4ed8; --sub:#15803d; --err:#b91c1c; --hitl:#b45309; --db:#6d28d9; --ink:#111827; --mute:#4b5563; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); margin: 0; background:#fff; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { color: var(--mute); font-size: 13px; margin-bottom: 10px; }
+  svg text { font-family: inherit; }
+  .legend { display:flex; gap:18px; font-size:12px; margin-top:6px; flex-wrap:wrap; }
+  .legend span::before { content:""; display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-2px; background:var(--c); }
+</style>
+</head>
+<body>
+<h1>Ecosistema de Automatización IA: mapa de arquitectura</h1>
+<div class="sub">Agustina Cisneros · Entrega final (intento 2) · n8n: <b>un solo workflow</b> con 4 subworkflows internos · Airtable · Google Gemini (RAG) · Slack · HITL con pausa real de la ejecución</div>
+
+<svg viewBox="0 0 1560 860" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker>
+    <style>
+      .box{rx:8;stroke-width:1.6}
+      .m{fill:#eff6ff;stroke:#1d4ed8}.s{fill:#f0fdf4;stroke:#15803d}.e{fill:#fef2f2;stroke:#b91c1c}.h{fill:#fffbeb;stroke:#b45309;stroke-width:2.6}.d{fill:#f5f3ff;stroke:#6d28d9}.x{fill:#f9fafb;stroke:#6b7280}
+      .t{font-size:12.5px;font-weight:600}.t2{font-size:11px;fill:#4b5563}
+      .ln{stroke:#374151;stroke-width:1.5;fill:none;marker-end:url(#a)}
+      .lr{stroke:#b91c1c;stroke-width:1.4;fill:none;stroke-dasharray:5 4;marker-end:url(#ar)}
+      .lg{stroke:#15803d;stroke-width:1.5;fill:none;stroke-dasharray:6 4;marker-end:url(#ag)}
+      .lbl{font-size:10.5px;fill:#374151}
+      .grp{fill:none;stroke-width:1.2;stroke-dasharray:4 3}
+      .gt{font-size:13px;font-weight:700}
+    </style>
+  </defs>
+
+  <!-- Grupo: flujo principal -->
+  <rect x="10" y="10" width="1540" height="330" class="grp" stroke="#1d4ed8" rx="10"/>
+  <text x="24" y="32" class="gt" fill="#1d4ed8">🟦 FLUJO PRINCIPAL (orquestador): un solo workflow de n8n</text>
+
+  <!-- fila principal -->
+  <rect x="24" y="60" width="150" height="58" class="box m"/><text x="34" y="83" class="t">⚡ Trigger Airtable</text><text x="34" y="100" class="t2">polling 1 min · formula</text><text x="34" y="112" class="t2">{Estado}='Generando'</text>
+  <rect x="194" y="60" width="130" height="58" class="box m"/><text x="204" y="83" class="t">⚙️ Configuración</text><text x="204" y="100" class="t2">modelo, tokens, canales,</text><text x="204" y="112" class="t2">horas HITL (variables)</text>
+  <rect x="344" y="60" width="120" height="58" class="box m"/><text x="354" y="83" class="t">🔁 Loop</text><text x="354" y="100" class="t2">1 registro por vez</text>
+  <rect x="484" y="60" width="120" height="58" class="box m"/><text x="494" y="83" class="t">🧹 Normalizar</text><text x="494" y="100" class="t2">idea, categoría,</text><text x="494" y="112" class="t2">canal, longitud</text>
+  <polygon points="690,58 752,89 690,120 628,89" class="box m" /><text x="652" y="86" class="t" font-size="11">¿Datos</text><text x="648" y="99" class="t" font-size="11">completos?</text>
+  <rect x="776" y="60" width="140" height="58" class="box m"/><text x="786" y="83" class="t">🔒 Anti-bucle</text><text x="786" y="100" class="t2">Estado =</text><text x="786" y="112" class="t2">"Procesando IA"</text>
+  <rect x="936" y="60" width="140" height="58" class="box s"/><text x="946" y="83" class="t">🧩 SUB 1</text><text x="946" y="100" class="t2">Generación RAG</text><text x="946" y="112" class="t2">(Execute Workflow)</text>
+  <polygon points="1150,58 1210,89 1150,120 1090,89" class="box m"/><text x="1122" y="86" class="t" font-size="11">¿IA</text><text x="1112" y="99" class="t" font-size="11">generó?</text>
+  <rect x="1226" y="60" width="150" height="58" class="box m"/><text x="1236" y="83" class="t">💬 Slack revisión</text><text x="1236" y="100" class="t2">#aprobaciones · borrador</text><text x="1236" y="112" class="t2">guarda thread_ts</text>
+
+  <path d="M174,89 H194" class="ln"/><path d="M324,89 H344" class="ln"/><path d="M464,89 H484" class="ln"/><path d="M604,89 H628" class="ln"/>
+  <path d="M752,89 H776" class="ln"/><text x="756" y="82" class="lbl">sí</text>
+  <path d="M916,89 H936" class="ln"/><path d="M1076,89 H1090" class="ln"/><path d="M1210,89 H1226" class="ln"/><text x="1212" y="82" class="lbl">sí</text>
+
+  <!-- HITL -->
+  <rect x="1226" y="150" width="310" height="80" class="box h"/>
+  <text x="1238" y="174" class="t" fill="#92400e">🧍 HITL · Send &amp; Wait for Response (Slack)</text>
+  <text x="1238" y="193" class="t2">Botones ✅ Aprobar y publicar / ❌ Rechazar</text>
+  <text x="1238" y="209" class="t" fill="#92400e">⏸ LA EJECUCIÓN QUEDA EN "WAITING"</text>
+  <text x="1238" y="224" class="t2">se reanuda al click · timeout 24 h = no aprobado</text>
+  <path d="M1300,118 V150" class="ln"/>
+
+  <polygon points="1380,250 1440,280 1380,310 1320,280" class="box m"/><text x="1348" y="277" class="t" font-size="11">¿Aprobado?</text>
+  <path d="M1380,230 V250" class="ln"/>
+  <rect x="1060" y="252" width="150" height="56" class="box s"/><text x="1070" y="275" class="t">🧩 SUB 2</text><text x="1070" y="292" class="t2">Publicación</text>
+  <rect x="1060" y="180" width="150" height="56" class="box s" /><text x="1070" y="203" class="t">🧩 SUB 3</text><text x="1070" y="220" class="t2">Rechazo</text>
+  <path d="M1320,280 H1210" class="ln"/><text x="1240" y="274" class="lbl">✅ true</text>
+  <path d="M1340,262 C1290,240 1250,208 1210,208" class="ln"/><text x="1214" y="250" class="lbl">❌ false / timeout</text>
+
+  <!-- error normalizer main -->
+  <rect x="610" y="190" width="160" height="56" class="box e"/><text x="620" y="213" class="t">🧾 Normalizar error</text><text x="620" y="230" class="t2">módulo + mensaje + recordId</text>
+  <rect x="800" y="190" width="150" height="56" class="box s"/><text x="810" y="213" class="t">🧩 SUB 4</text><text x="810" y="230" class="t2">Registrar error</text>
+  <path d="M770,218 H800" class="ln"/>
+  <path d="M690,120 V190" class="lr"/><text x="696" y="160" class="lbl" fill="#b91c1c">no</text>
+  <path d="M846,118 C846,150 760,160 740,190" class="lr"/>
+  <path d="M1300,118 C1300,140 900,150 770,200" class="lr"/>
+  <text x="930" y="176" class="lbl" fill="#b91c1c">salidas de error de cada nodo / SUB</text>
+
+  <!-- loop back -->
+  <path d="M1060,300 C700,330 420,330 404,118" class="ln" stroke-dasharray="2 3"/>
+  <text x="520" y="322" class="lbl">al terminar cada rama → vuelve al Loop (siguiente registro)</text>
+
+  <!-- Grupo subworkflows -->
+  <rect x="10" y="360" width="1100" height="490" class="grp" stroke="#15803d" rx="10"/>
+  <text x="24" y="382" class="gt" fill="#15803d">🟩 SUBWORKFLOWS: mismo archivo, invocados con Execute Workflow → $workflow.id</text>
+
+  <rect x="24" y="560" width="140" height="58" class="box s"/><text x="34" y="583" class="t">📥 Entrada de</text><text x="34" y="600" class="t">subworkflows</text>
+  <rect x="184" y="560" width="120" height="58" class="box s"/><text x="194" y="583" class="t">🔀 Router</text><text x="194" y="600" class="t2">campo "subflujo"</text>
+  <path d="M164,589 H184" class="ln"/>
+
+  <!-- SUB1 -->
+  <text x="330" y="408" class="t" fill="#15803d">SUB 1 · generar_rag</text>
+  <rect x="330" y="416" width="130" height="54" class="box d"/><text x="340" y="438" class="t">📚 RAG Airtable</text><text x="340" y="455" class="t2">Manual de Marca</text>
+  <rect x="476" y="416" width="130" height="54" class="box s"/><text x="486" y="438" class="t">🧠 Armar prompt</text><text x="486" y="455" class="t2">contexto + variables</text>
+  <rect x="622" y="416" width="140" height="54" class="box x"/><text x="632" y="438" class="t">🤖 Gemini API</text><text x="632" y="455" class="t2">max 1000 tok · retry×3</text>
+  <rect x="778" y="416" width="130" height="54" class="box s"/><text x="788" y="438" class="t">🧪 Validar IA</text><text x="788" y="455" class="t2">texto, finishReason</text>
+  <rect x="924" y="416" width="170" height="54" class="box d"/><text x="934" y="438" class="t">💾 Airtable</text><text x="934" y="455" class="t2">Estado = "En revisión"</text>
+  <path d="M460,443 H476" class="ln"/><path d="M606,443 H622" class="ln"/><path d="M762,443 H778" class="ln"/><path d="M908,443 H924" class="ln"/>
+  <path d="M304,575 C320,520 310,470 330,443" class="ln"/>
+
+  <!-- SUB2 -->
+  <text x="330" y="508" class="t" fill="#15803d">SUB 2 · publicar</text>
+  <rect x="330" y="516" width="170" height="54" class="box d"/><text x="340" y="538" class="t">✅ Airtable</text><text x="340" y="555" class="t2">Publicado · Aprobado · Fecha</text>
+  <rect x="516" y="516" width="190" height="54" class="box x"/><text x="526" y="538" class="t">📣 Slack</text><text x="526" y="555" class="t2">#contenido-publicado (salida)</text>
+  <rect x="722" y="516" width="170" height="54" class="box x"/><text x="732" y="538" class="t">🧵 Slack en hilo</text><text x="732" y="555" class="t2">thread_ts de la revisión</text>
+  <path d="M500,543 H516" class="ln"/><path d="M706,543 H722" class="ln"/>
+  <path d="M304,585 C315,570 318,550 330,543" class="ln"/>
+
+  <!-- SUB3 -->
+  <text x="330" y="608" class="t" fill="#15803d">SUB 3 · rechazar</text>
+  <rect x="330" y="616" width="170" height="54" class="box d"/><text x="340" y="638" class="t">🚫 Airtable</text><text x="340" y="655" class="t2">Estado = "Rechazado"</text>
+  <rect x="516" y="616" width="190" height="54" class="box x"/><text x="526" y="638" class="t">🧵 Slack en hilo</text><text x="526" y="655" class="t2">aviso, no se publica nada</text>
+  <path d="M500,643 H516" class="ln"/>
+  <path d="M304,600 C318,615 318,640 330,643" class="ln"/>
+
+  <!-- SUB4 -->
+  <text x="330" y="708" class="t" fill="#b91c1c">SUB 4 · registrar_error</text>
+  <rect x="330" y="716" width="170" height="54" class="box e"/><text x="340" y="738" class="t">📝 Log de Errores</text><text x="340" y="755" class="t2">link → Contenidos</text>
+  <rect x="516" y="716" width="170" height="54" class="box e"/><text x="526" y="738" class="t">⚠️ Airtable</text><text x="526" y="755" class="t2">Estado = "Error"</text>
+  <rect x="702" y="716" width="170" height="54" class="box e"/><text x="712" y="738" class="t">🚨 Slack alerta</text><text x="712" y="755" class="t2">módulo + detalle</text>
+  <path d="M500,743 H516" class="ln"/><path d="M686,743 H702" class="ln"/>
+  <path d="M304,610 C320,690 310,720 330,743" class="ln"/>
+  <text x="24" y="800" class="t2">Errores internos de SUB 1/2/3 (salidas rojas) → 🧾 Normalizar error (sub) → SUB 4</text>
+  <text x="24" y="818" class="t2">🛟 Error Trigger (red de seguridad global): el workflow es su propio Error Workflow → SUB 4</text>
+  <text x="24" y="836" class="t2">Subflujo desconocido → ⛔ Stop and Error</text>
+
+  <!-- Airtable DB -->
+  <rect x="1130" y="360" width="420" height="300" class="grp" stroke="#6d28d9" rx="10"/>
+  <text x="1144" y="382" class="gt" fill="#6d28d9">🟪 AIRTABLE: memoria y registro del sistema</text>
+  <rect x="1146" y="398" width="185" height="120" class="box d"/>
+  <text x="1156" y="418" class="t">Contenidos</text>
+  <text x="1156" y="436" class="t2">Idea Semilla · Categoria · Canal</text>
+  <text x="1156" y="451" class="t2">Estado (máquina de estados)</text>
+  <text x="1156" y="466" class="t2">Contenido Generado · Aprobado</text>
+  <text x="1156" y="481" class="t2">Fecha de Aprobación · Hilo Slack</text>
+  <text x="1156" y="496" class="t2">Errores (link) · KPI x3</text>
+  <rect x="1350" y="398" width="185" height="80" class="box d"/>
+  <text x="1360" y="418" class="t">Log de Errores</text>
+  <text x="1360" y="436" class="t2">Modulo · Mensaje · Fecha</text>
+  <text x="1360" y="451" class="t2">Contenido (link) ⇄</text>
+  <path d="M1350,440 H1331" class="ln" marker-start="url(#a)"/>
+  <rect x="1146" y="540" width="185" height="70" class="box d"/>
+  <text x="1156" y="560" class="t">Manual de Marca (RAG)</text>
+  <text x="1156" y="577" class="t2">Categoria · Tema ·</text>
+  <text x="1156" y="592" class="t2">Contenido Validado (solo lectura)</text>
+  <rect x="1350" y="540" width="185" height="100" class="box h"/>
+  <text x="1360" y="560" class="t">📊 Dashboard (Shared View)</text>
+  <text x="1360" y="578" class="t2">Tasa de aprobación</text>
+  <text x="1360" y="593" class="t2">Volumen de salida</text>
+  <text x="1360" y="608" class="t2">Tasa de error</text>
+  <text x="1360" y="623" class="t2">link público, sin login</text>
+  <path d="M1331,470 C1340,520 1345,560 1350,570" class="ln"/>
+
+  <!-- Estados -->
+  <rect x="1130" y="680" width="420" height="170" class="grp" stroke="#374151" rx="10"/>
+  <text x="1144" y="702" class="gt">Máquina de estados (campo Estado)</text>
+  <text x="1144" y="728" class="t2" font-size="12">Generando → Procesando IA → En revisión → ⏸ HITL →</text>
+  <text x="1144" y="748" class="t2" font-size="12">Publicado  |  Rechazado  |  Error</text>
+  <text x="1144" y="776" class="t2">Anti-bucle: el trigger solo toma "Generando" y el 1er paso</text>
+  <text x="1144" y="792" class="t2">lo cambia a "Procesando IA", así que nunca se reprocesa.</text>
+  <text x="1144" y="816" class="t2">APIs: Airtable REST · Gemini generateContent · Slack</text>
+  <text x="1144" y="832" class="t2">chat.postMessage (+thread_ts) · Slack Send&amp;Wait (webhook n8n)</text>
+</svg>
+
+<div class="legend">
+  <span style="--c:#dbeafe">Flujo principal</span>
+  <span style="--c:#dcfce7">Subworkflow / llamada</span>
+  <span style="--c:#fef3c7">Human-in-the-loop (pausa real)</span>
+  <span style="--c:#ede9fe">Airtable (DB)</span>
+  <span style="--c:#f3f4f6">API externa (IA / Slack)</span>
+  <span style="--c:#fee2e2">Ruta de error</span>
+</div>
+</body>
+</html>

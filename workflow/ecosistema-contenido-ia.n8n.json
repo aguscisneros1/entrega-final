@@ -1,0 +1,2462 @@
+{
+  "name": "Ecosistema IA · Pipeline de Contenido (flujo único con subworkflows + HITL)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🟦 FLUJO PRINCIPAL — Orquestador\nTrigger (Airtable, Estado = Generando) → Configuración → Loop de 1 registro → Validación → Anti-bucle → **SUB 1 Generación RAG** → Slack revisión → **HITL (el flujo se PAUSA hasta que un humano aprieta Aprobar/Rechazar en Slack)** → **SUB 2 Publicación** / **SUB 3 Rechazo**. Cualquier fallo va a **SUB 4 Registro de errores**.",
+        "height": 760,
+        "width": 3900,
+        "color": 5
+      },
+      "id": "5b733a79-d75b-526c-bb21-7ed5e09c0796",
+      "name": "Nota · Flujo principal",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "triggerField": "Ultima Modificacion",
+        "additionalFields": {
+          "formula": "{Estado} = 'Generando'"
+        }
+      },
+      "id": "92494480-8784-5fff-abd5-b3696dd91483",
+      "name": "⚡ Trigger · Idea nueva en Airtable",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ae7ef0b-de12-5882-89b4-279f11374569",
+              "name": "cfg",
+              "value": "={{ {\n  modeloIA: 'gemini-3.6-flash',\n  maxTokens: 1000,\n  temperatura: 0.7,\n  maxPalabras: 200,\n  minCaracteresIdea: 10,\n  canalAprobaciones: 'C0C12LQCXJR',\n  canalPublicacion: 'C0C1128NG67',\n  canalAlertas: 'C0C12LQCXJR',\n  horasEsperaHITL: 24\n} }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      },
+      "id": "dddf6cf8-110b-52bc-9833-e14f22b65ccc",
+      "name": "⚙️ Configuración del sistema",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -140,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "ade3f59c-5402-51b6-816e-f799ab195c9a",
+      "name": "🔁 Loop · 1 registro por vez",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        80,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "254f2d47-cb36-56e6-bdf0-2de21eba5d38",
+      "name": "🏁 Fin del lote",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81a3e6b0-885d-5fa9-ad9f-7323a65a8e50",
+              "name": "recordId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "57ffdf36-b76a-5913-bc4b-ccf069ffd613",
+              "name": "idea",
+              "value": "={{ ($json.fields['Idea Semilla'] ?? '').toString().trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "b4358d3b-e170-5bbd-9afe-8b93e3c0f801",
+              "name": "categoria",
+              "value": "={{ ($json.fields['Categoria'] ?? '').toString().trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "3b8afc35-b158-5aaf-ad31-8976a2f04f14",
+              "name": "canal",
+              "value": "={{ ($json.fields['Canal'] ?? 'LinkedIn').toString().trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "923d9956-8875-5f72-ad16-3bf90ab837dd",
+              "name": "longitudIdea",
+              "value": "={{ ($json.fields['Idea Semilla'] ?? '').toString().trim().length }}",
+              "type": "number"
+            },
+            {
+              "id": "063984db-471a-5007-8af4-01f69a7987d4",
+              "name": "cfg",
+              "value": "={{ $json.cfg }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f23b4fd9-ef0c-5260-a1c1-7a5c61d26a17",
+      "name": "🧹 Normalizar registro",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e77a33d0-3586-56f5-8397-e83c82b6c2b7",
+              "leftValue": "={{ $json.idea }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "f8ee71c1-8b49-5151-bbd4-00c6fd16e949",
+              "leftValue": "={{ $json.categoria }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "f80873d9-7535-5315-bea3-93eb8ecb89a4",
+              "leftValue": "={{ $json.longitudIdea }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              },
+              "rightValue": "={{ $json.cfg.minCaracteresIdea }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2daad044-9204-5b7c-8026-37936604bf29",
+      "name": "❓ ¿Datos completos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('🧹 Normalizar registro').first().json.recordId }}",
+            "Estado": "Procesando IA"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "6ea6d854-3ac4-54cb-ae6e-fffaaef89a5f",
+      "name": "🔒 Anti-bucle · Estado \"Procesando IA\"",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        -100
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02cc1c55-cb58-5501-a59a-76b60a9a3ec4",
+              "name": "subflujo",
+              "value": "generar_rag",
+              "type": "string"
+            },
+            {
+              "id": "47fbb997-dcd7-5feb-88d4-511149fc1501",
+              "name": "recordId",
+              "value": "={{ $('🧹 Normalizar registro').first().json.recordId }}",
+              "type": "string"
+            },
+            {
+              "id": "13c77de8-3dcf-501b-a867-8f2fbd8fc42f",
+              "name": "idea",
+              "value": "={{ $('🧹 Normalizar registro').first().json.idea }}",
+              "type": "string"
+            },
+            {
+              "id": "b1229fb5-42d4-5fb9-a499-0813372282c1",
+              "name": "categoria",
+              "value": "={{ $('🧹 Normalizar registro').first().json.categoria }}",
+              "type": "string"
+            },
+            {
+              "id": "17153fb4-7964-5186-bdb1-0b26f3ecd41a",
+              "name": "canal",
+              "value": "={{ $('🧹 Normalizar registro').first().json.canal }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5c6c5f-aab5-5822-a8cc-0580a9428900",
+              "name": "cfg",
+              "value": "={{ $('🧹 Normalizar registro').first().json.cfg }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "42b7e0f7-e529-5bac-ab39-ff3ff44d8a3a",
+      "name": "📦 Payload · SUB 1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1000,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "ae4d2127-3ede-5f3b-b6a7-601d45fcb63d",
+      "name": "🧩 SUB 1 · Generación RAG",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1220,
+        -100
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b75bfc69-9772-554a-b07b-73f6963728f8",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "91c033e8-77a5-5ee6-a8e3-3f28da67112c",
+      "name": "❓ ¿IA generó contenido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('🧹 Normalizar registro').first().json.cfg.canalAprobaciones }}",
+          "mode": "id"
+        },
+        "text": "=📋 *Nueva pieza para revisar* (registro `{{ $json.recordId }}`)\n*Idea semilla:* {{ $json.idea }}\n*Categoría:* {{ $json.categoria }}  ·  *Canal destino:* {{ $json.canal }}\n\n*Borrador generado por IA:*\n>>> {{ $json.contenido }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "cdb0006c-72d1-57d2-8a41-8c427640ccbb",
+      "name": "💬 Slack · Enviar pieza a revisión",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1680,
+        -200
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('🧹 Normalizar registro').first().json.cfg.canalAprobaciones }}",
+          "mode": "id"
+        },
+        "message": "=🛑 *Aprobación requerida* — el flujo está *pausado* esperando tu decisión.\nPieza: _{{ $('🧩 SUB 1 · Generación RAG').first().json.idea }}_ (ver borrador en el mensaje anterior).\nSi aprobás, se publica en el canal de salida. Si rechazás, no se contacta a nadie.",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "✅ Aprobar y publicar",
+            "disapproveLabel": "❌ Rechazar"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": "={{ $('🧹 Normalizar registro').first().json.cfg.horasEsperaHITL }}",
+              "resumeUnit": "hours"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "id": "b46bff22-80d3-5b49-8ea1-001bdc312e25",
+      "name": "🧍 HITL · Esperar aprobación humana",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -200
+      ],
+      "webhookId": "75ada1cb-811d-5f6e-8201-28aecf668167",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "95e4b798-12b7-5a81-a8ca-9bc1afcfcde3",
+              "leftValue": "={{ $json.data?.approved === true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fa7d760d-e1fa-5c45-ae08-8b88c0d8cb8a",
+      "name": "❓ ¿Aprobado por humano?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e4315a9-1990-5ca2-a21f-1a302900d5a1",
+              "name": "subflujo",
+              "value": "publicar",
+              "type": "string"
+            },
+            {
+              "id": "6266d383-e4bf-58df-b111-d69c106bcda9",
+              "name": "recordId",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.recordId }}",
+              "type": "string"
+            },
+            {
+              "id": "cbf2b63b-b84a-593b-85a7-7261c3fcd294",
+              "name": "idea",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.idea }}",
+              "type": "string"
+            },
+            {
+              "id": "9e92dd5a-a40e-51bb-bbdd-dd2185443439",
+              "name": "canal",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.canal }}",
+              "type": "string"
+            },
+            {
+              "id": "1e62e4e4-77bc-5337-a35b-c4b3ef3e6da7",
+              "name": "contenido",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.contenido }}",
+              "type": "string"
+            },
+            {
+              "id": "8f2dd6f0-3f5a-51e7-bb17-483c9b040899",
+              "name": "threadTs",
+              "value": "={{ $('💬 Slack · Enviar pieza a revisión').first().json.message_timestamp ?? $('💬 Slack · Enviar pieza a revisión').first().json.ts ?? $('💬 Slack · Enviar pieza a revisión').first().json.message?.ts }}",
+              "type": "string"
+            },
+            {
+              "id": "f0af97b7-6a4b-5b4f-a034-8dd12a9b72d5",
+              "name": "cfg",
+              "value": "={{ $('🧹 Normalizar registro').first().json.cfg }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e77e3b6f-3bf9-5c65-bb16-eeee91c8bfe2",
+      "name": "📦 Payload · SUB 2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0dea2c9-7cee-5f47-a205-b260ce7dec41",
+              "name": "subflujo",
+              "value": "rechazar",
+              "type": "string"
+            },
+            {
+              "id": "c3e4507c-a6fd-5020-a1dd-9f50697a6c23",
+              "name": "recordId",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.recordId }}",
+              "type": "string"
+            },
+            {
+              "id": "a3f38852-6403-552b-abb9-bb54b58acf4c",
+              "name": "idea",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.idea }}",
+              "type": "string"
+            },
+            {
+              "id": "03c66c10-8964-5e8a-9788-e41441ed9acd",
+              "name": "canal",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.canal }}",
+              "type": "string"
+            },
+            {
+              "id": "799c6e9d-7c65-55fc-be45-3094ff994501",
+              "name": "contenido",
+              "value": "={{ $('🧩 SUB 1 · Generación RAG').first().json.contenido }}",
+              "type": "string"
+            },
+            {
+              "id": "30c5eaef-8aea-5565-98ff-cbdf9ec68c2a",
+              "name": "threadTs",
+              "value": "={{ $('💬 Slack · Enviar pieza a revisión').first().json.message_timestamp ?? $('💬 Slack · Enviar pieza a revisión').first().json.ts ?? $('💬 Slack · Enviar pieza a revisión').first().json.message?.ts }}",
+              "type": "string"
+            },
+            {
+              "id": "315c57c9-6abb-54c3-be39-5b17de54fd13",
+              "name": "cfg",
+              "value": "={{ $('🧹 Normalizar registro').first().json.cfg }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2c7ad9a-557c-50d6-834f-63fd4d7f229c",
+      "name": "📦 Payload · SUB 3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "56018d53-9b03-5167-8bce-5fa1e9c84077",
+      "name": "🧩 SUB 2 · Publicación",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -300
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "66003feb-6187-5e22-8184-348ebcbd6f12",
+      "name": "🧩 SUB 3 · Rechazo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -100
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "id": "571752a1-fac1-5d95-9acb-4ec9cc4aec03",
+      "name": "⏭️ Error ya registrado por SUB 1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cualquier fallo del flujo principal en un payload estándar para SUB 4.\nconst reg = $('🧹 Normalizar registro').first().json;\nconst origen = $prevNode.name;\nconst e = $json.error;\nlet mensaje;\nif (origen === '❓ ¿Datos completos?') {\n  const faltantes = [];\n  if (!reg.idea) faltantes.push('Idea Semilla vacía');\n  if (!reg.categoria) faltantes.push('Categoria vacía');\n  if (reg.idea && reg.longitudIdea < reg.cfg.minCaracteresIdea) {\n    faltantes.push(`Idea Semilla demasiado corta (${reg.longitudIdea} < ${reg.cfg.minCaracteresIdea} caracteres)`);\n  }\n  mensaje = 'Datos faltantes/incompletos: ' + faltantes.join('; ');\n} else if (typeof e === 'string') {\n  mensaje = e;\n} else {\n  mensaje = e?.message || e?.description || JSON.stringify($json);\n}\nreturn [{\n  json: {\n    subflujo: 'registrar_error',\n    recordId: reg.recordId,\n    idea: reg.idea,\n    modulo: origen === '❓ ¿Datos completos?' ? 'Validación de entrada' : origen,\n    mensaje: String(mensaje).slice(0, 1000),\n    cfg: reg.cfg,\n  },\n}];"
+      },
+      "id": "d56990d8-45c1-5b87-a8ea-222c475d2aa0",
+      "name": "🧾 Normalizar error (principal)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "8d38e120-52a0-5d26-a170-28813f629e5d",
+      "name": "🧩 SUB 4 · Registrar error",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        260
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## 🟩 SUBWORKFLOWS (dentro del mismo workflow)\nEl flujo principal se llama a sí mismo con **Execute Workflow** (`$workflow.id`) enviando el campo `subflujo`. El **Router** deriva a: **SUB 1** Generación RAG · **SUB 2** Publicación · **SUB 3** Rechazo · **SUB 4** Registro de errores.",
+        "height": 1560,
+        "width": 3500,
+        "color": 4
+      },
+      "id": "5a86a21c-75a8-56e3-acc5-42dfee85f8e6",
+      "name": "Nota · Subworkflows",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        740
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "8e47442e-18be-515b-8cf9-cca36124617b",
+      "name": "📥 Entrada de subworkflows",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        1440
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "abb4a05f-8abf-5b5f-b0ed-545a9733c747",
+                    "leftValue": "={{ $json.subflujo }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "generar_rag"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUB 1 · Generación RAG"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "67690231-98b0-5154-a255-4ab8118520a9",
+                    "leftValue": "={{ $json.subflujo }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "publicar"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUB 2 · Publicación"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "68156968-8a64-5592-9276-c320b2aea743",
+                    "leftValue": "={{ $json.subflujo }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "rechazar"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUB 3 · Rechazo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "42e2c14f-52a3-588b-8928-0ab184e5dfc6",
+                    "leftValue": "={{ $json.subflujo }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "registrar_error"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUB 4 · Registrar error"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Subflujo desconocido"
+        }
+      },
+      "id": "65ae35ea-0359-51f0-9de5-fb5f4aaf75b8",
+      "name": "🔀 Router de subworkflows",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -140,
+        1440
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Subflujo desconocido: {{ $json.subflujo }}"
+      },
+      "id": "6168c6bb-7b2f-575c-86d4-2128b2b46cba",
+      "name": "⛔ Subflujo desconocido",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        120,
+        1820
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app8saP7sKupgcjAK",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblJNVngOBOStcL4k",
+          "mode": "id"
+        },
+        "filterByFormula": "={Categoria} = '{{ $json.categoria.replace(/'/g, \"\\\\'\") }}'",
+        "returnAll": true,
+        "options": {
+          "view": {
+            "__rl": true,
+            "value": "viwlVKJmk27LL5Wy8",
+            "mode": "id"
+          }
+        }
+      },
+      "id": "f85e34a1-d5a9-5450-a579-689bbd8eb027",
+      "name": "📚 RAG · Buscar en Manual de Marca",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        120,
+        1060
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Une los fragmentos validados del Manual de Marca y arma el prompt dinámico.\n// Minimización de datos: al modelo solo viajan idea, categoría, canal y el contexto RAG.\nconst ctx = $('🔀 Router de subworkflows').first().json;\nconst cfg = ctx.cfg;\nconst fragmentos = $input.all()\n  .map(i => i.json)\n  .filter(r => r && (r['Contenido Validado'] || r.fields?.['Contenido Validado']))\n  .map(r => {\n    const f = r.fields ?? r;\n    return `Tema: ${f['Tema'] ?? 's/d'}\\n${f['Contenido Validado']}`;\n  });\n\nif (fragmentos.length === 0) {\n  return [{ json: {\n    ...ctx, ok: false,\n    modulo: '📚 RAG · Buscar en Manual de Marca',\n    mensaje: `Sin contexto validado en el Manual de Marca para la categoría \"${ctx.categoria}\"`,\n  } }];\n}\n\nconst systemPrompt =\n  'Sos el redactor de contenido de la marca. Tu única fuente de verdad es el CONTEXTO VALIDADO ' +\n  'que recibís, extraído del Manual de Marca. No uses conocimiento externo ni inventes datos sobre ' +\n  `la empresa. Redactá un post para ${ctx.canal}: profesional, cercano y estructurado ` +\n  `(hook inicial, cuerpo, cierre con llamada a la acción), de no más de ${cfg.maxPalabras} palabras. ` +\n  'Devolvé solo el texto del post, sin comentarios adicionales.';\n\nconst userPrompt =\n  `Idea semilla: ${ctx.idea}\\nCategoría: ${ctx.categoria}\\nCanal destino: ${ctx.canal}\\n\\n` +\n  `CONTEXTO VALIDADO DE LA MARCA:\\n${fragmentos.join('\\n\\n')}`;\n\nreturn [{ json: {\n  ...ctx,\n  ok: true,\n  fragmentosRAG: fragmentos.length,\n  geminiBody: {\n    system_instruction: { parts: [{ text: systemPrompt }] },\n    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],\n    generationConfig: { maxOutputTokens: cfg.maxTokens, temperature: cfg.temperatura },\n  },\n} }];"
+      },
+      "id": "6a50a141-e560-55db-82ae-8bf1e1cd5396",
+      "name": "🧠 Unir contexto + armar prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b75bfc69-9772-554a-b07b-73f6963728f8",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "03b95b14-a1a8-573d-8eb4-8737bc10d91c",
+      "name": "❓ ¿Hay contexto RAG?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        580,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.cfg.modeloIA }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.geminiBody) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "588b4208-5053-5c9c-87e4-40063070bd7b",
+      "name": "🤖 IA · Gemini genera borrador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        1060
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida la respuesta del modelo (camino infeliz: respuesta vacía, bloqueada o truncada).\nconst ctx = $('🧠 Unir contexto + armar prompt').first().json;\nconst cand = $json.candidates?.[0];\nconst texto = (cand?.content?.parts ?? []).map(p => p.text ?? '').join('').trim();\nconst palabras = texto ? texto.split(/\\s+/).length : 0;\nconst usage = $json.usageMetadata ?? {};\nconst { geminiBody, ...resto } = ctx;\nreturn [{ json: {\n  ...resto,\n  ok: palabras > 0,\n  contenido: texto,\n  palabras,\n  finishReason: cand?.finishReason ?? 'SIN_CANDIDATOS',\n  tokensEntrada: usage.promptTokenCount ?? 0,\n  tokensSalida: usage.candidatesTokenCount ?? 0,\n  modulo: '🤖 IA · Gemini genera borrador',\n  mensaje: palabras > 0 ? '' : `La IA no devolvió texto (finishReason: ${cand?.finishReason ?? 'SIN_CANDIDATOS'})`,\n} }];"
+      },
+      "id": "9a9efc16-c48e-5b2b-b213-ba609deadbdc",
+      "name": "🧪 Validar respuesta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b75bfc69-9772-554a-b07b-73f6963728f8",
+              "leftValue": "={{ $json.ok }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "8249f56f-ed7a-5b05-a3bb-c109b02b29b7",
+              "leftValue": "={{ $json.palabras }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3c92737f-ceb0-520c-a4cd-0f39a0eb4336",
+      "name": "❓ ¿Respuesta IA válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1240,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.recordId }}",
+            "Contenido Generado": "={{ $json.contenido }}",
+            "Estado": "En revisión"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contenido Generado",
+              "displayName": "Contenido Generado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "868219f6-d392-51c2-b489-13418cd74dfd",
+      "name": "💾 Guardar borrador · \"En revisión\"",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1460,
+        1060
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da9287f8-c028-5e8e-af82-ffc90de4798f",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "6b7b214f-56a8-5fd6-9252-4e17ab4ecbec",
+              "name": "recordId",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.recordId }}",
+              "type": "string"
+            },
+            {
+              "id": "b1da1027-6c39-587e-86c1-4b8656550054",
+              "name": "idea",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.idea }}",
+              "type": "string"
+            },
+            {
+              "id": "aedda7e4-072a-505b-a7de-530c36ed3681",
+              "name": "categoria",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.categoria }}",
+              "type": "string"
+            },
+            {
+              "id": "b232512a-aa1b-5c0b-a92e-5c24757f9d9c",
+              "name": "canal",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.canal }}",
+              "type": "string"
+            },
+            {
+              "id": "f2a7ff8f-39b9-5a01-81be-0c2ed773904b",
+              "name": "contenido",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.contenido }}",
+              "type": "string"
+            },
+            {
+              "id": "e942d1f6-5acf-5fb6-9a96-1330caacf93a",
+              "name": "palabras",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.palabras }}",
+              "type": "number"
+            },
+            {
+              "id": "0605a06e-1458-5520-97d9-81f42363b0cc",
+              "name": "tokensEntrada",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.tokensEntrada }}",
+              "type": "number"
+            },
+            {
+              "id": "990cc456-702d-5e8c-ae7d-a9e4f2a3d90a",
+              "name": "tokensSalida",
+              "value": "={{ $('🧪 Validar respuesta IA').first().json.tokensSalida }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "afac884e-b419-5d73-947b-d1fecb106b31",
+      "name": "📤 Resultado SUB 1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1700,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.recordId }}",
+            "Estado": "Publicado",
+            "Aprobado": "={{ true }}",
+            "Fecha de Aprobación": "={{ $now.toISODate() }}",
+            "Hilo Slack": "={{ $json.threadTs }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Aprobado",
+              "displayName": "Aprobado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de Aprobación",
+              "displayName": "Fecha de Aprobación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Hilo Slack",
+              "displayName": "Hilo Slack",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "d6f27443-772e-5bf5-b366-84195e6cb0e7",
+      "name": "✅ Airtable · Estado \"Publicado\"",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        120,
+        1320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('🔀 Router de subworkflows').first().json.cfg.canalPublicacion }}",
+          "mode": "id"
+        },
+        "text": "=✅ *Publicado* ({{ $('🔀 Router de subworkflows').first().json.canal }}) — {{ $('🔀 Router de subworkflows').first().json.idea }}\n\n{{ $('🔀 Router de subworkflows').first().json.contenido }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "9f53c89d-5349-5514-a1eb-b42fa6498c5c",
+      "name": "📣 Slack · Publicar en canal de salida",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        360,
+        1320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('🔀 Router de subworkflows').first().json.cfg.canalAprobaciones }}",
+          "mode": "id"
+        },
+        "text": "=✅ Aprobado por revisión humana y publicado en <#{{ $('🔀 Router de subworkflows').first().json.cfg.canalPublicacion }}>. Estado en Airtable: *Publicado*.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('🔀 Router de subworkflows').first().json.threadTs }}"
+            }
+          }
+        }
+      },
+      "id": "3484bd13-ec49-5420-b722-dc52f9794255",
+      "name": "🧵 Slack · Responder en hilo (aprobado)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        600,
+        1320
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6469a93d-0a81-581b-94b4-ae3c572ccbc2",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "cdbe7867-97eb-53f0-a4ac-0cb5f1084a31",
+              "name": "estado",
+              "value": "Publicado",
+              "type": "string"
+            },
+            {
+              "id": "2e9aa5ab-3889-5093-ab06-2da202b122be",
+              "name": "recordId",
+              "value": "={{ $('🔀 Router de subworkflows').first().json.recordId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "981e8e96-52ed-5083-b461-e56097a288d0",
+      "name": "📤 Resultado SUB 2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        840,
+        1320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.recordId }}",
+            "Estado": "Rechazado",
+            "Aprobado": "={{ false }}",
+            "Hilo Slack": "={{ $json.threadTs }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Aprobado",
+              "displayName": "Aprobado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Hilo Slack",
+              "displayName": "Hilo Slack",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "77b7ffe6-467b-5bfc-bbd3-b2cd7417a18f",
+      "name": "🚫 Airtable · Estado \"Rechazado\"",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        120,
+        1560
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('🔀 Router de subworkflows').first().json.cfg.canalAprobaciones }}",
+          "mode": "id"
+        },
+        "text": "=❌ Rechazado (o sin respuesta dentro del plazo). No se publicó nada. Estado en Airtable: *Rechazado*.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('🔀 Router de subworkflows').first().json.threadTs }}"
+            }
+          }
+        }
+      },
+      "id": "34b97aa2-33d1-55ce-b50f-61590b231187",
+      "name": "🧵 Slack · Responder en hilo (rechazado)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        360,
+        1560
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c490fff-925c-5702-a703-fa1915936558",
+              "name": "ok",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "a095b407-f04f-592e-97a6-757fa87f2a80",
+              "name": "estado",
+              "value": "Rechazado",
+              "type": "string"
+            },
+            {
+              "id": "2fe598dd-3fc2-502d-8ef4-b534583af453",
+              "name": "recordId",
+              "value": "={{ $('🔀 Router de subworkflows').first().json.recordId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38a153ce-c2d4-596e-be1c-d299e9275204",
+      "name": "📤 Resultado SUB 3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        600,
+        1560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Estandariza cualquier fallo ocurrido dentro de SUB 1/2/3 para registrarlo en SUB 4.\nconst ctx = $('🔀 Router de subworkflows').first().json;\n// Si el item trae \"error\" viene de una salida de error de nodo; si no, de una validación (IF false).\nconst e = $json.error;\nlet modulo, mensaje;\nif (e) {\n  modulo = $prevNode.name;\n  mensaje = typeof e === 'string' ? e : (e.message || e.description || JSON.stringify(e));\n} else {\n  modulo = $json.modulo || $prevNode.name;\n  mensaje = $json.mensaje || 'Validación fallida sin detalle';\n}\nreturn [{ json: {\n  subflujo: 'registrar_error',\n  recordId: ctx.recordId,\n  idea: ctx.idea,\n  modulo,\n  mensaje: String(mensaje).slice(0, 1000),\n  cfg: ctx.cfg,\n} }];"
+      },
+      "id": "55e86f52-72ce-5aef-9339-037722d07f64",
+      "name": "🧾 Normalizar error (subworkflows)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        1440
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "84417a1b-e256-5864-b3f9-1b1be5f601b2",
+              "name": "recordId",
+              "value": "={{ $json.recordId ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "0653c899-9e3e-564f-8f48-b853a16548ac",
+              "name": "idea",
+              "value": "={{ $json.idea ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "08e32fa2-bb98-5358-ab3a-a054e2c8fde1",
+              "name": "modulo",
+              "value": "={{ $json.modulo ?? 'Desconocido' }}",
+              "type": "string"
+            },
+            {
+              "id": "818001e0-fa91-5b82-9c3e-70455f9367d3",
+              "name": "mensaje",
+              "value": "={{ $json.mensaje ?? 'Sin mensaje' }}",
+              "type": "string"
+            },
+            {
+              "id": "86172cf6-a560-5beb-a298-3c08a84b0774",
+              "name": "cfg",
+              "value": "={{ $json.cfg }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c0c13f4c-aa8d-5643-8551-14090305a747",
+      "name": "📥 Error a registrar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1700,
+        1820
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblgYFeGeFImx8eZe",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Modulo": "={{ $json.modulo }}",
+            "Mensaje": "={{ $json.mensaje }}",
+            "Contenido": "={{ $json.recordId ? [$json.recordId] : [] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Modulo",
+              "displayName": "Modulo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contenido",
+              "displayName": "Contenido",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "beaa612f-8710-51c1-ae7a-14857396f0aa",
+      "name": "📝 Log de Errores · Crear registro",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1940,
+        1820
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cab90052-3c9e-56bc-bc1a-9d239a7560bb",
+              "leftValue": "={{ $('📥 Error a registrar').first().json.recordId }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "21014fcf-d489-5d85-9b7f-349e3a60eb2e",
+      "name": "❓ ¿Tiene registro asociado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2180,
+        1820
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appCtyPCA4QGzyXR5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblPQPkpH8S5B10wz",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('📥 Error a registrar').first().json.recordId }}",
+            "Estado": "Error"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "f88b5e18-8147-5dbb-a6bb-1887654b08c0",
+      "name": "⚠️ Airtable · Estado \"Error\"",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2420,
+        1720
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('📥 Error a registrar').first().json.cfg.canalAlertas }}",
+          "mode": "id"
+        },
+        "text": "=🚨 *Error en el pipeline de contenido*\n*Módulo:* {{ $('📥 Error a registrar').first().json.modulo }}\n*Registro:* {{ $('📥 Error a registrar').first().json.recordId || 'N/A' }} — {{ $('📥 Error a registrar').first().json.idea || 's/d' }}\n*Detalle:* {{ $('📥 Error a registrar').first().json.mensaje }}\nQuedó registrado en *Log de Errores* y el contenido pasó a Estado *Error*.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "e74680ba-f632-5428-9761-5df3089c7b87",
+      "name": "🚨 Slack · Alerta de error",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2660,
+        1820
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a289ef86-d823-5326-9b12-ad4ed0f925e7",
+              "name": "ok",
+              "value": "={{ false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "0c63fbb8-b45b-51ac-80da-fb956130e2f3",
+              "name": "errorRegistrado",
+              "value": "={{ true }}",
+              "type": "boolean"
+            },
+            {
+              "id": "7cfd3742-e984-5504-80e8-22ebddebf6ca",
+              "name": "recordId",
+              "value": "={{ $('📥 Error a registrar').first().json.recordId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "85025547-ea23-5779-8499-4a413b7d6f74",
+      "name": "📤 Resultado SUB 4",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2900,
+        1820
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4b4c576e-be12-5d0e-bb4d-2d265e474f4b",
+      "name": "🛟 Error Trigger · red de seguridad",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "43bcbea0-bf46-55ca-9112-9210bf47dd09",
+              "name": "recordId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a19eb3d4-5424-5aa5-8e6a-170ad12d0faa",
+              "name": "idea",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "9e50c178-80e0-52ee-8faf-1bd9d7aaf3d5",
+              "name": "modulo",
+              "value": "={{ 'Error no controlado en: ' + ($json.execution?.lastNodeExecuted ?? 'desconocido') }}",
+              "type": "string"
+            },
+            {
+              "id": "5396986c-7182-51ca-b7d5-428cd4f16a82",
+              "name": "mensaje",
+              "value": "={{ ($json.execution?.error?.message ?? 'sin detalle') + ' · Ejecución ' + ($json.execution?.id ?? '') }}",
+              "type": "string"
+            },
+            {
+              "id": "aef7d34f-d921-5494-ba6d-2c938a312f01",
+              "name": "cfg",
+              "value": "={{ { canalAlertas: 'C0C12LQCXJR' } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a41db23f-495f-54aa-bd49-6bf5e2406b42",
+      "name": "🧾 Normalizar error global",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1700,
+        2040
+      ]
+    }
+  ],
+  "connections": {
+    "⚡ Trigger · Idea nueva en Airtable": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Configuración del sistema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Configuración del sistema": {
+      "main": [
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔁 Loop · 1 registro por vez": {
+      "main": [
+        [
+          {
+            "node": "🏁 Fin del lote",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧹 Normalizar registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧹 Normalizar registro": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Datos completos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Datos completos?": {
+      "main": [
+        [
+          {
+            "node": "🔒 Anti-bucle · Estado \"Procesando IA\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔒 Anti-bucle · Estado \"Procesando IA\"": {
+      "main": [
+        [
+          {
+            "node": "📦 Payload · SUB 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📦 Payload · SUB 1": {
+      "main": [
+        [
+          {
+            "node": "🧩 SUB 1 · Generación RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 SUB 1 · Generación RAG": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿IA generó contenido?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿IA generó contenido?": {
+      "main": [
+        [
+          {
+            "node": "💬 Slack · Enviar pieza a revisión",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏭️ Error ya registrado por SUB 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💬 Slack · Enviar pieza a revisión": {
+      "main": [
+        [
+          {
+            "node": "🧍 HITL · Esperar aprobación humana",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧍 HITL · Esperar aprobación humana": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Aprobado por humano?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Aprobado por humano?": {
+      "main": [
+        [
+          {
+            "node": "📦 Payload · SUB 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📦 Payload · SUB 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📦 Payload · SUB 2": {
+      "main": [
+        [
+          {
+            "node": "🧩 SUB 2 · Publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📦 Payload · SUB 3": {
+      "main": [
+        [
+          {
+            "node": "🧩 SUB 3 · Rechazo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 SUB 2 · Publicación": {
+      "main": [
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 SUB 3 · Rechazo": {
+      "main": [
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (principal)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧾 Normalizar error (principal)": {
+      "main": [
+        [
+          {
+            "node": "🧩 SUB 4 · Registrar error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏭️ Error ya registrado por SUB 1": {
+      "main": [
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 SUB 4 · Registrar error": {
+      "main": [
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔁 Loop · 1 registro por vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Entrada de subworkflows": {
+      "main": [
+        [
+          {
+            "node": "🔀 Router de subworkflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Router de subworkflows": {
+      "main": [
+        [
+          {
+            "node": "📚 RAG · Buscar en Manual de Marca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "✅ Airtable · Estado \"Publicado\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚫 Airtable · Estado \"Rechazado\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📥 Error a registrar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⛔ Subflujo desconocido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📚 RAG · Buscar en Manual de Marca": {
+      "main": [
+        [
+          {
+            "node": "🧠 Unir contexto + armar prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Unir contexto + armar prompt": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Hay contexto RAG?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Hay contexto RAG?": {
+      "main": [
+        [
+          {
+            "node": "🤖 IA · Gemini genera borrador",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 IA · Gemini genera borrador": {
+      "main": [
+        [
+          {
+            "node": "🧪 Validar respuesta IA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧪 Validar respuesta IA": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Respuesta IA válida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Respuesta IA válida?": {
+      "main": [
+        [
+          {
+            "node": "💾 Guardar borrador · \"En revisión\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Guardar borrador · \"En revisión\"": {
+      "main": [
+        [
+          {
+            "node": "📤 Resultado SUB 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Airtable · Estado \"Publicado\"": {
+      "main": [
+        [
+          {
+            "node": "📣 Slack · Publicar en canal de salida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📣 Slack · Publicar en canal de salida": {
+      "main": [
+        [
+          {
+            "node": "🧵 Slack · Responder en hilo (aprobado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧵 Slack · Responder en hilo (aprobado)": {
+      "main": [
+        [
+          {
+            "node": "📤 Resultado SUB 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 Airtable · Estado \"Rechazado\"": {
+      "main": [
+        [
+          {
+            "node": "🧵 Slack · Responder en hilo (rechazado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧾 Normalizar error (subworkflows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧵 Slack · Responder en hilo (rechazado)": {
+      "main": [
+        [
+          {
+            "node": "📤 Resultado SUB 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧾 Normalizar error (subworkflows)": {
+      "main": [
+        [
+          {
+            "node": "📥 Error a registrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Error a registrar": {
+      "main": [
+        [
+          {
+            "node": "📝 Log de Errores · Crear registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Log de Errores · Crear registro": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Tiene registro asociado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Tiene registro asociado?": {
+      "main": [
+        [
+          {
+            "node": "⚠️ Airtable · Estado \"Error\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🚨 Slack · Alerta de error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Airtable · Estado \"Error\"": {
+      "main": [
+        [
+          {
+            "node": "🚨 Slack · Alerta de error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 Slack · Alerta de error": {
+      "main": [
+        [
+          {
+            "node": "📤 Resultado SUB 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛟 Error Trigger · red de seguridad": {
+      "main": [
+        [
+          {
+            "node": "🧾 Normalizar error global",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧾 Normalizar error global": {
+      "main": [
+        [
+          {
+            "node": "📥 Error a registrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
