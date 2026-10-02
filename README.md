@@ -36,7 +36,7 @@ Los blueprints de Make del intento 1 quedan en [`legacy/make/`](legacy/make) sol
 ## Enlaces
 
 - **Dashboard de control (Shared View):** https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt (vista **KPIs del sistema**)
-- **Base de datos en modo lectura:** _pegar acá el link de lectura de la base "Pipeline de Contenido"_
+- **Base de datos en modo lectura:** https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF
 - **Documento público (Google Doc / Notion):** _pegar acá el link_
 - **Video demo (3 min):** https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing
 

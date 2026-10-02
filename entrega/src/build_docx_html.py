@@ -30,7 +30,7 @@ html = f"""<html><head><meta charset="utf-8"></head><body>
 <h2>Enlaces</h2>
 <table border="1" cellpadding="6">
 <tr><td><b>Dashboard de control (Shared View)</b></td><td><a href="https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt">https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt</a></td></tr>
-<tr><td><b>Base de datos (modo lectura)</b></td><td>[COMPLETAR: link de solo lectura de la base]</td></tr>
+<tr><td><b>Base de datos (modo lectura)</b></td><td><a href="https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF">https://airtable.com/appCtyPCA4QGzyXR5/shrBIC22XxubHnrfF</a> (vista de solo lectura de la tabla Contenidos, tablero por Estado)</td></tr>
 <tr><td><b>Workflow n8n (.json)</b></td><td><a href="{WF}">{WF}</a></td></tr>
 <tr><td><b>Repositorio</b></td><td><a href="{REPO}">{REPO}</a></td></tr>
 <tr><td><b>Video demo (3 min)</b></td><td><a href="https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing">https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing</a></td></tr>
