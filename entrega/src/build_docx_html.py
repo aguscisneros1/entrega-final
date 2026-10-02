@@ -10,20 +10,21 @@ for md in sorted((root/'docs').glob('0*.md')):
     parts.append(markdown.markdown(t, extensions=["tables","fenced_code","nl2br"]))
 REPO='https://github.com/aguscisneros1/entrega-final/tree/claude/ia-automation-unified-workflow-iuscap'
 WF='https://github.com/aguscisneros1/entrega-final/blob/claude/ia-automation-unified-workflow-iuscap/workflow/ecosistema-contenido-ia.n8n.json'
+C = "/tmp/claude-0/-home-user-entrega-final/8253df89-7381-57f4-b871-296b8383ab09/scratchpad/caps/"
+CANVAS = "/home/user/entrega-final/entrega/img/workflow-n8n-canvas.png"
 ev = [
- ("7.1 Workflow único en n8n (flujo principal + subworkflows)", "el lienzo completo del workflow en n8n (bloque azul y bloque verde)"),
- ("7.2 HITL: la ejecución PAUSADA esperando la decisión humana", "n8n → Ejecuciones, con la ejecución en estado <b>“Esperando”</b>"),
- ("7.3 HITL: mensaje de aprobación en Slack", "el mensaje “🛑 Aprobación requerida — el flujo está pausado” con los botones ❌ Rechazar / ✅ Aprobar y publicar"),
- ("7.4 Borrador generado por la IA con RAG", "el mensaje “📋 Nueva pieza para revisar” con el borrador"),
- ("7.5 Salida: publicación en #contenido-publicado", "el post “✅ Publicado (LinkedIn) — Tips de organización para freelancers”"),
- ("7.6 Rechazo humano", "la fila “Cómo fijar tus tarifas como freelancer” en Estado Rechazado (y la respuesta “❌ Rechazado” en el hilo)"),
- ("7.7 Camino infeliz: dato faltante", "la alerta 🚨 “Datos faltantes/incompletos: Idea Semilla vacía”"),
- ("7.8 Fallo real de API (Gemini 503) capturado por el Error Handler", "la alerta 🚨 con “Service unavailable” del módulo IA · Gemini"),
- ("7.9 Log de Errores vinculado a Contenidos", "la tabla Log de Errores con los registros"),
- ("7.10 Tabla Contenidos con los estados", "la tabla Contenidos mostrando Publicado / Rechazado / Error"),
- ("7.11 Dashboard (Shared View) abierto en incógnito", "la vista KPIs del sistema con los promedios y la suma abajo"),
+ ("7.1 Workflow único en n8n: flujo principal (azul) + subworkflows (verde)", [CANVAS]),
+ ("7.2 HITL: la ejecución queda PAUSADA (“Esperando”) hasta la decisión humana", [C+"img03.png"]),
+ ("7.3 HITL: mensaje de aprobación en Slack con los botones Rechazar / Aprobar y publicar", [C+"img02.png", C+"img06.png"]),
+ ("7.4 Después del clic en Aprobar: la ejecución termina y corre SUB 2 · Publicación", [C+"img04.png"]),
+ ("7.5 Salida: publicación automática en #contenido-publicado", [C+"img05.png"]),
+ ("7.6 Rechazo humano: la pieza queda en Estado Rechazado y no se publica", [C+"img07.png"]),
+ ("7.7 Camino infeliz: Idea Semilla vacía → error controlado (no se llama a la IA)", [C+"img08.png"]),
+ ("7.8 Error Handlers: credencial sin permiso (403) y caída real de Gemini (503) registradas y alertadas", [C+"img01.png"]),
+ ("7.9 Log de Errores vinculado a Contenidos (relación entre tablas)", [C+"img09.png"]),
+ ("7.10 Dashboard de control (Shared View pública “KPIs del sistema”)", [C+"img10.png"]),
 ]
-evhtml = "<h1>7. Evidencias (capturas)</h1>" + "".join(f"<h2>{a}</h2>{ph(b)}" for a,b in ev)
+evhtml = "<h1>7. Evidencias (capturas)</h1>" + "".join(f"<h2>{a}</h2>" + "".join(f'<p><img src="{x}" width="640"></p>' for x in imgs) for a,imgs in ev)
 html = f"""<html><head><meta charset="utf-8"></head><body>
 <h1>Ecosistema de Automatización IA Autónomo para Negocios</h1>
 <p><b>Entrega final (intento 2)</b> · Agustina Cisneros<br>Caso de uso: pipeline de generación y publicación de contenido de marketing con IA (RAG), con aprobación humana en tiempo real antes de publicar.</p>
