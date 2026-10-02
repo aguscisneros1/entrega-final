@@ -38,7 +38,7 @@ section {{ page-break-before: always; }} .full {{ width:100%; border:1px solid #
 <tr><th>Repositorio</th><td>https://github.com/aguscisneros1/entrega-final/tree/claude/ia-automation-unified-workflow-iuscap</td></tr>
 <tr><th>Dashboard de control (Shared View)</th><td>https://airtable.com/appCtyPCA4QGzyXR5/shr9RbSHu2YsiSJFt</td></tr>
 <tr><th>Base de datos (lectura)</th><td>[completar]</td></tr>
-<tr><th>Video demo (3 min)</th><td>[completar]</td></tr>
+<tr><th>Video demo (3 min)</th><td>https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing</td></tr>
 </table>
 <h2>Correcciones respecto del intento 1</h2>
 <ul>

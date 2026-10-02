@@ -33,7 +33,7 @@ html = f"""<html><head><meta charset="utf-8"></head><body>
 <tr><td><b>Base de datos (modo lectura)</b></td><td>[COMPLETAR: link de solo lectura de la base]</td></tr>
 <tr><td><b>Workflow n8n (.json)</b></td><td><a href="{WF}">{WF}</a></td></tr>
 <tr><td><b>Repositorio</b></td><td><a href="{REPO}">{REPO}</a></td></tr>
-<tr><td><b>Video demo (3 min)</b></td><td>[COMPLETAR: link del video]</td></tr>
+<tr><td><b>Video demo (3 min)</b></td><td><a href="https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing">https://drive.google.com/file/d/1jWk3e47hR2khTUuzZeiAwceMCg9LZW8d/view?usp=sharing</a></td></tr>
 </table>
 <h2>Correcciones respecto del intento 1</h2>
 <ul>
